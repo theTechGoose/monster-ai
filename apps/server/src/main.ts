@@ -16,7 +16,7 @@ async function bootstrap() {
   await app.listen(port);
 
   Logger.log(
-    `🚀 Application running on: base-url:${port}/${globalPrefix}`
+    `🚀 Application running on: 35.192.155.46${port}/${globalPrefix}`
   );
 }
 
