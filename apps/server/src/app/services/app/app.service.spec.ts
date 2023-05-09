@@ -17,5 +17,11 @@ describe('AppService', () => {
     it('should return "Hello API"', () => {
       expect(service.getData()).toEqual({ message: 'Hello API' });
     });
+
+
+    it('should puppet', async () => {
+      const res = await service.testPupeteer()
+      console.log(res);
+    })
   });
 });
