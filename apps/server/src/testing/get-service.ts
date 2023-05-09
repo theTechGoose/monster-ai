@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { Test } from '@nestjs/testing';
 
 export async function getService<T>(Service: any): Promise<T> {

@@ -6,6 +6,7 @@ tmp
 /out-tsc
 .env
 test-files
+stores
 
 # dependencies
 node_modules
