@@ -1,3 +1,4 @@
+import "dotenv/config";
 /* eslint-disable */
 export default {
   displayName: 'server',
