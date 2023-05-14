@@ -63,6 +63,27 @@ async set(questionText: string, answerId: string) {
     return questionId;
   }
 
+  async groupTo(centroidQuestionId: string, toCondenseIds: Array<string>) {
+    const client = getLocalDbClient();
+    client.connect();
+    const db = client.db(this.dbName);
+    const collection = db.collection(this.dataCollectionName);
+    const _id = new ObjectId(centroidQuestionId);
+    const questionSeed = await collection.findOne<I_Question>({_id})
+    const question = new Question(questionSeed)
+    const _toCondenseIds = toCondenseIds.map(id => new ObjectId(id))
+    const toCondenseSeeds = await collection.find<I_Question>({_id: {$in: _toCondenseIds}}).toArray()
+    const toCondense = toCondenseSeeds.map(seed => new Question(seed))
+    const resetQuestions = toCondense.map(d => {
+      d.metadata.relatedAnswers = question.metadata.relatedAnswers
+      return d
+    })
+    await collection.bulkWrite(resetQuestions.map())
+     
+    
+    
+  }
+
  async addAnswer(questionId: string, answerId: string) {
     const client = getLocalDbClient();
     client.connect();
