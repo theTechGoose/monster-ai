@@ -9,6 +9,7 @@ export class LocalAnswerDataService {
   dataCollectionName = "answers";
 
   async vote(type: "up" | "down", id: string) {
+    console.log({ type, id });
     const client = getLocalDbClient();
     client.connect();
     const db = client.db(this.dbName);

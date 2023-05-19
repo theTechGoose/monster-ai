@@ -1,4 +1,4 @@
-import { I_Answer } from "../../services/local-question-data/models";
+import { I_Answer } from "../../services/local-answer-data/models";
 
 export function calculateScore(answer: Omit<I_Answer, "_id">) {
   const { upVotes, downVotes } = answer;

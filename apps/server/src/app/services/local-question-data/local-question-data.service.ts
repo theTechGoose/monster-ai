@@ -34,7 +34,8 @@ async set(questionText: string, answerId: string) {
     const cursor =  collection.find({})
     const questions = await cursor.toArray();
     await client.close();
-    return questions;
+    //TODO: create embeding function here which embeds all of the question, clusters them with k-means, uses the elbow method to determine the optimal k value  pulls all of the answers from each cluster and assigns the answers to the centroid.
+    return questions.map(q => new Question(q as any));
   }
 
   async updateUsed(questionId: string) {
@@ -78,10 +79,11 @@ async set(questionText: string, answerId: string) {
       d.metadata.relatedAnswers = question.metadata.relatedAnswers
       return d
     })
-    await collection.bulkWrite(resetQuestions.map())
-     
-    
-    
+    //TODO: bulk write the questions to the db
+    //await collection.bulkWrite(resetQuestions.map())
+
+
+
   }
 
  async addAnswer(questionId: string, answerId: string) {

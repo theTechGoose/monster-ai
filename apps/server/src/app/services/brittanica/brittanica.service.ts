@@ -19,6 +19,45 @@ export class BrittanicaService {
     this.root = findPackageJsonDir()
   }
 
+
+  // async testPuppet2() {
+  //   const browser = await puppeteer.launch({
+  //     headless: false,
+  //   });
+  //
+  //   loggedIn = false;
+  //   const page = await browser.newPage();
+  //   await page.goto('http://spt.mx/minivac/src/index.php')
+  //   const str1 = 'name="user"'
+  //   const str2 = 'type="password"'
+  //   const str3 = 'name="submit"'
+  //   const userElement = await page.$(`[name="user"]`);
+  //   const passwordElement = await page.$(`[type="password"]`);
+  //   const submitElement = await page.$(`[name="submit"]`);
+  //   await userElement.type('MRGLLCFB99C')
+  //   await passwordElement.type('MRGLLC')
+  //   await submitElement.click()
+  //   await page.waitForNetworkIdle()
+  //   const result = await page.$$eval('#mailboxlist > *', children => {
+  //       return children.map(child => child.outerHTML);
+  //   });
+  //
+  //   // Check if there are enough children
+  //   if (result.length >= 4) {
+  //       console.log('Found the element!');
+  //       // Click the fourth child
+  //       const elementHandler = await page.$(`#mailboxlist > :nth-child(4)`);
+  //       if (elementHandler) {
+  //           await elementHandler.click();
+  //       } else {
+  //           console.log('Could not find the element');
+  //       }
+  //   } else {
+  //       console.log('Not enough children');
+  //   }
+  //
+  // }
+  //
   async saveVectorStore(content: Array<string>) {
     const docs = content.map((c) => {
       return new Document({pageContent: c})

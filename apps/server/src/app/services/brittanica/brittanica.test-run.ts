@@ -5,7 +5,8 @@ import similarity from "compute-cosine-similarity"
 import {Document} from "langchain/document"
 
 (async () => {
-  await checkEmbeddings()
+  //await checkEmbeddings()
+  await testPuppet2()
   // const docs = await runVectorQuery('where can I go in punta cana', 2)
   // console.log(docs);
   // await saveVectorStore()
@@ -48,3 +49,11 @@ async function testPuppet() {
   const result = await service.getAll();
   return result
 }
+
+async function testPuppet2() {
+  const service = await getService<BrittanicaService>(BrittanicaService);
+  // const result = await service.testPuppet2();
+}
+
+
+
