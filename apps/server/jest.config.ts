@@ -1,3 +1,4 @@
+process.env['IS_TEST'] = 'true';
 import "dotenv/config";
 /* eslint-disable */
 export default {

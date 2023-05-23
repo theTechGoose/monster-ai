@@ -53,32 +53,45 @@ In essence, all services in the AMI system work together harmoniously, each cont
 ### Db Service
 As a core component of AMI (Artificial Monster Inteligence), the Db Service functions to ensure seamless interactions between AMI and its underlying database. The Db Service's operations are intricately linked to the Training Data Service, indicating that the Training Data Service is a vital supplier of data for the Db Service.
 
+
  this class provides a range of methods that facilitate various data manipulations and retrievals
 
 #### Deps
-- Training Data Service
+- Verison Service
 
 #### Methods
-- upVote(id): Answer
-- downVote(id): Answer
-- get version(): string
+- vote(id, type: 'up' | 'down'): Answer
 - saveQuestion(Question): id
 - saveAnswer(Answer): id
 - associateAnswerWithQuestion(questionId, AnswerId)
 - getAnswers(ids): Answers
+- getQuestions(ids): Questions
+- getAll(type: 'answers' | 'questions')
+- **private** getCollection(arg: T_TrainingArg)
+
+
+### Version Service
+Manages the versions so that data is never deleted, the version is just incremented and the previous state is saved so that it can be restored at a later date
+
+#### Deps
+
+#### Methods
+- getVersionNames(type: 'question'| 'answer'): Array<string>
+- getCurrentVersion(type: 'question' | 'answer'): string
+- newVersion(type: 'question' | 'answer'): string
+- **private** createDb(arg: T_TrainingArg)
 
 ### Training Data Service
 The Training Data Service in the Artificial Monster Intelligence (AMI) system is a crucial component that provides and manages data required for training various AI models. It is inherently dependent on the Training Manager, which controls the overall orchestration of the different Training Services such as Answer Training Service, Question Training Service, and Britannica Training Service.
 
 #### Deps
 - Training Manager
+- Db Service
 
 #### Methods
 - upVote(id): Answer
 - downVote(id): Answer
-- getVersionNames(): Array<string>
-- getVersion(id): Version
-- train(type, version): void
+- train(type): void
 
 ### Training Manager
 As a central hub in the AMI system, the Training Manager effectively manages and synchronizes the different Training Services, namely the Answer Training Service, Question Training Service, and Britannica Training Service. It organizes the entire training process and ensures smooth interaction and cooperation among the various training services.
@@ -87,12 +100,10 @@ As a central hub in the AMI system, the Training Manager effectively manages and
 - Answer Training Service 
 - Question Training Service
 - Brittanica Trianing Service
+- Version Service
 
 #### Methods
-- train(type, state): void
-- **private** createNewVersion(docs): Version
-- **private** saveVersion(version): id
-- **private** getState(version): 
+- train(type, version): void
 
 ### Answer Training Service implements I_Trainer
 The Answer Training Service is a fundamental component of the Artificial Monster Intelligence (AMI) system that directly implements the I_Trainer interface. It holds the primary responsibility for training the AI models on generating responses or answers.
