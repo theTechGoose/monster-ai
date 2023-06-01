@@ -12,12 +12,11 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 5000;
   await app.listen(port);
+  console.log('hello');
 
-  Logger.log(
-    `🚀 Application running on: 35.192.155.46${port}/${globalPrefix}`
-  );
+  Logger.log(`🚀 Application running on: 35.192.155.46${port}/${globalPrefix}`);
 }
 
 bootstrap();

@@ -1,21 +1,13 @@
 import { Module } from '@nestjs/common';
+import { AmiDbController } from './ami/controllers/ami-db/ami-db.controller';
+import { AmiDbService } from './ami/ai-backend/services/ami-db/ami-db.service';
+import { VersionService } from './ami/ai-backend/services/version/version.service';
 
-import { AppController } from './controllers/app/app.controller';
-import { AppService } from './services/app/app.service';
-import {BrittanicaService} from "./services/brittanica/brittanica.service"
-import {LocalAnswerDataService} from "./services/local-answer-data/local-answer-data.service"
-import {LocalQuestionDataService} from "./services/local-question-data/local-question-data.service"
-import {QuestionVectorDbService} from "./services/question-vector-db/question-vector-db.service"
-import {SupportingDocumentsService} from "./services/supporting-documents/supporting-documents.service"
-
-
-export const providers = [AppService, BrittanicaService, LocalAnswerDataService,LocalQuestionDataService,QuestionVectorDbService,SupportingDocumentsService]
-
+export const providers = [AmiDbService, VersionService];
 
 @Module({
   imports: [],
-  controllers: [AppController],
+  controllers: [AmiDbController],
   providers,
 })
-
 export class AppModule {}

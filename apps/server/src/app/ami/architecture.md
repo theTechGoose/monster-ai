@@ -3,7 +3,7 @@
 
 The Artificial Monster Intelligence (AMI) system is an advanced software platform consisting of several interrelated services designed to provide interactive, AI-generated responses to user queries. At the system's entry point, the AI Service integrates functionalities of the Doc Refiner, Answer Builder, and Q/A Logger, allowing users to pose questions and receive responses. The Training Manager oversees multiple Training Services - Answer, Question, and Britannica, which use data from the Training Data Service to refine AI models. In support, the Db Service and Q/A Logger Service manage data interactions, while the Doc Refiner and Answer Builder work together to process and formulate high-quality, relevant responses to user queries.
 
-![AMI DIAGRAM](https://firebasestorage.googleapis.com/v0/b/monster-mono-repo.appspot.com/o/projects%2Fami%2FBlank%20diagram-2.png?alt=media&token=eed6991d-1e04-4410-bb88-6945af79f939)
+![AMI DIAGRAM](https://firebasestorage.googleapis.com/v0/b/monster-mono-repo.appspot.com/o/projects%2Fami%2FBlank%20diagram-3.png?alt=media&token=ff10c7af-226f-407a-a764-a291411b4a9c)
 
 ## Too Long, Dont Read
 Imagine it as a large, automated factory with different departments working together to produce a product—in this case, smart and accurate responses to any questions you ask.
@@ -103,12 +103,15 @@ As a central hub in the AMI system, the Training Manager effectively manages and
 - Version Service
 
 #### Methods
-- train(type, version): void
+- train(type, version): {id: string, type: string}
 
 ### Answer Training Service implements I_Trainer
 The Answer Training Service is a fundamental component of the Artificial Monster Intelligence (AMI) system that directly implements the I_Trainer interface. It holds the primary responsibility for training the AI models on generating responses or answers.
 
 As a specialized service dedicated to enhancing the quality of AI-generated answers, the Answer Training Service provides several methods that contribute to a more robust and refined training process
+
+#### Deps
+- Vector Service
 
 #### Methods
 - train(version): void

@@ -1,0 +1,50 @@
+{
+  "database": {
+    "rules": "firebase-utils/database.rules.json"
+  },
+  "firestore": {
+    "rules": "firebase-utils/firestore.rules",
+    "indexes": "firebase-utils/firestore.indexes.json"
+  },
+  "functions": {
+    "predeploy": [
+      "nx build server --prod"
+    ],
+    "source": "dist/apps/server",
+    "runtime": "nodejs16"
+  },
+  "storage": {
+    "rules": "firebase-utils/storage.rules"
+  },
+  "emulators": {
+    "auth": {
+      "port": 9099
+    },
+    "functions": {
+      "port": 5000
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "database": {
+      "port": 9000
+    },
+    "hosting": {
+      "port": 5001
+    },
+    "pubsub": {
+      "port": 8085
+    },
+    "storage": {
+      "port": 9199
+    },
+    "ui": {
+      "enabled": true
+    },
+    "singleProjectMode": true
+  },
+  "remoteconfig": {
+    "template": "firebase-utils/remoteconfig.template.json"
+  },
+  "hosting": []
+}

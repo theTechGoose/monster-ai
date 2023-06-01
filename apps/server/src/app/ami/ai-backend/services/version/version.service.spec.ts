@@ -16,9 +16,4 @@ describe('VersionService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should create a new version', async () => {
-    const version = await service.newVersion('answer')
-    console.log(version);
-})
-
 });

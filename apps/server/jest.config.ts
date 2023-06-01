@@ -1,5 +1,5 @@
 process.env['IS_TEST'] = 'true';
-import "dotenv/config";
+import 'dotenv/config';
 /* eslint-disable */
 export default {
   displayName: 'server',
