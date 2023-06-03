@@ -61,7 +61,7 @@ async function getSummary(summary: string) {
   );
 
   const summaryText = summaryChunks.join('\n\n');
-  const output = llm.call(
+  const output = await llm.call(
     `You are an Ai that has been tasked with summarizing the output of other ais, the other ais output a summary of a chunk of a transcription. Please summarize the following: ${summaryText}`
   );
   return output;
