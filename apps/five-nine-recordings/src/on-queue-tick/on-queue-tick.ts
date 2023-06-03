@@ -17,6 +17,7 @@ const textSplitter = new RecursiveCharacterTextSplitter({
 });
 
 let isTranscribing = false;
+
 export function onQueueTick() {
   if (isTranscribing) return;
   if (queue.length === 0) return;
