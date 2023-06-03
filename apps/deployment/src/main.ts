@@ -7,8 +7,6 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app/app.module';
-import chokidar from 'chokidar'
-import os from "os"
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,5 +20,3 @@ async function bootstrap() {
 }
 
 bootstrap();
-const watcher = chokidar.watch(`${os.homedir()}/recordings`)
-watcher.on('add', path => console.log(path))
