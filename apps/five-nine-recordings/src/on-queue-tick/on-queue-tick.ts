@@ -65,7 +65,7 @@ async function getSummary(summary: string) {
   const summaryChunks = await Promise.all(
     chunks.map(async (chunk) => {
       return await llm.call(
-        `This is a chunk of a guest service call for a vacation company. Your job is to find the important points in this chunk so that a bot can summarize them later. Please include any relevent points, misunderstandings, or issues within the chunk. Please do not include any names in your summaries, refer to the guest as the guest and the agent as the team-member. Chunk: ${chunk}`
+        `This is a chunk of a guest service call for a vacation company. Your job is to find the important points in this chunk so that a bot can summarize them later. Please include any relevent points, misunderstandings, or issues within the chunk. Please do not include any names in your summaries, refer to the guest as the guest and the agent as the team-member. Make the output a bulleted list of points Chunk: ${chunk}`
       );
     })
   );
@@ -73,8 +73,11 @@ async function getSummary(summary: string) {
   console.log('begining summarization of summaries');
 
   const summaryText = summaryChunks.join('\n\n');
-  const output = await llm.call(
-    `This is a list of summaries of one phone call between a guest service agent and a guest of a vacation sales company.Please do not include any names in your summaries, refer to the guest as the guest and the agent as the team-member. The list of summaries is separated by \n\n please take all of these summaries and turn it into a single summary where all of the relevent points, misunderstandings or issues are stated: ${summaryText}`
+  let output = await llm.call(
+    `This is a list of summaries of one phone call between a guest service agent and a guest of a vacation sales company.Please do not include any names in your summaries, refer to the guest as the guest and the agent as the team-member. The list of summaries is separated by \n\n please take all of these summaries and turn it into a single summary where all of the relevent points, misunderstandings or issues are stated. make the output a bulleted list of points: ${summaryText}`
   );
+
+  output = output.split('agent').join('team-member');
+
   return output;
 }
