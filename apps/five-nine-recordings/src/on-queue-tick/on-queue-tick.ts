@@ -10,7 +10,10 @@ import os from 'os';
 
 // const db = firestore();
 // const bucket = storage();
-const llm = new OpenAI({ openAIApiKey: process.env.OPEN_AI_KEY });
+const llm = new OpenAI({
+  modelName: 'gpt-3.5-turbo',
+  openAIApiKey: process.env.OPEN_AI_KEY,
+});
 
 const textSplitter = new RecursiveCharacterTextSplitter({
   chunkSize: 1000,
@@ -29,7 +32,13 @@ export function onQueueTick() {
 async function popQueue() {
   const path = queue.pop();
   await execTranscription(path);
-  if (queue.length > 0) await popQueue();
+  if (queue.length > 0) {
+    console.log(
+      `Detected another element in the queue. Length ${queue.length}`
+    );
+
+    await popQueue();
+  }
   isTranscribing = false;
 }
 
@@ -46,23 +55,26 @@ async function execTranscription(path: string) {
   const fileContent = readFileSync(newPath, 'utf-8');
   console.log(`deleting ${transcriptionPath}`);
   execSync(`rm -rf ${transcriptionPath}`);
-  const summary = getSummary(fileContent);
+  const summary = await getSummary(fileContent);
   console.log(summary);
 }
 
 async function getSummary(summary: string) {
+  console.log(`begining summarization`);
   const chunks = await textSplitter.splitText(summary);
   const summaryChunks = await Promise.all(
     chunks.map(async (chunk) => {
       return await llm.call(
-        `You are an AI that has been tasked with summarizing a chunk of a larger text. After all the chunks have been summarized, another ai will summarize all of the summaries. Please summarize the following text: ${chunk}`
+        `You are an AI that has been tasked with summarizing a chunk of a larger text. After all the chunks have been summarized, another ai will summarize all of the summaries. Please summarize the following text and include as much detail as you can: ${chunk}`
       );
     })
   );
 
+  console.log('begining summarization of summaries');
+
   const summaryText = summaryChunks.join('\n\n');
   const output = await llm.call(
-    `You are an Ai that has been tasked with summarizing the output of other ais, the other ais output a summary of a chunk of a transcription. Please summarize the following: ${summaryText}`
+    `You are an Ai that has been tasked with summarizing the output of other ais, the other ais output a summary of a chunk of a transcription. Please summarize the following and include as much detail as you can: ${summaryText}`
   );
   return output;
 }
