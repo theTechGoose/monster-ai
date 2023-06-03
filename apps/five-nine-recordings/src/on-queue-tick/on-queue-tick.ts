@@ -10,7 +10,7 @@ import os from 'os';
 
 // const db = firestore();
 // const bucket = storage();
-const llm = new OpenAI({ openAIApiKey: process.env.OPENAI_API_KEY });
+const llm = new OpenAI({ openAIApiKey: process.env.OPEN_AI_KEY });
 
 const textSplitter = new RecursiveCharacterTextSplitter({
   chunkSize: 1000,
