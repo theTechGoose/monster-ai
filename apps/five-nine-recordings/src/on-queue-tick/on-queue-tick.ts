@@ -65,7 +65,7 @@ async function getSummary(summary: string) {
   const summaryChunks = await Promise.all(
     chunks.map(async (chunk) => {
       return await llm.call(
-        `This is a chunk of a customer service call for a vacation company. Your job is to find the important points in this chunk so that a bot can summarize them later. Please include any relevent points, misunderstandings, or issues within the chunk. Chunk: ${chunk}`
+        `This is a chunk of a guest service call for a vacation company. Your job is to find the important points in this chunk so that a bot can summarize them later. Please include any relevent points, misunderstandings, or issues within the chunk. Chunk: ${chunk}`
       );
     })
   );
@@ -74,7 +74,7 @@ async function getSummary(summary: string) {
 
   const summaryText = summaryChunks.join('\n\n');
   const output = await llm.call(
-    `This is a list of summaries of one phone call between a customer service agent and a guest of a vacation sales company. The list of summaries is separated by \n\n please take all of these summaries and turn it into a single summary where all of the relevent points, misunderstandings or issues are stated: ${summaryText}`
+    `This is a list of summaries of one phone call between a guest service agent and a guest of a vacation sales company. The list of summaries is separated by \n\n please take all of these summaries and turn it into a single summary where all of the relevent points, misunderstandings or issues are stated: ${summaryText}`
   );
   return output;
 }
