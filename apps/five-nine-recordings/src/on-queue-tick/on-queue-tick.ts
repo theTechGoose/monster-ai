@@ -22,6 +22,7 @@ export function onQueueTick() {
   if (isTranscribing) return;
   if (queue.length === 0) return;
   isTranscribing = true;
+  console.log(`Elements have been added to the queue. Length: ${queue.length}`);
   popQueue();
 }
 
@@ -33,6 +34,7 @@ async function popQueue() {
 }
 
 async function execTranscription(path: string) {
+  console.log(`Transcribing ${path}`);
   const id = nanoid();
   const transcriptionPath = `${os.homedir()}/transcriptions/${id}`;
   execSync(`mkdir ${transcriptionPath}`);
@@ -42,7 +44,10 @@ async function execTranscription(path: string) {
   const fileName = path.split('/').pop().split('.')[0];
   const newPath = `${transcriptionPath}/${fileName}.txt`;
   const fileContent = readFileSync(newPath, 'utf-8');
+  console.log(`deleting ${transcriptionPath}`);
   execSync(`rm -rf ${transcriptionPath}`);
+  const summary = getSummary(fileContent);
+  console.log(summary);
 }
 
 async function getSummary(summary: string) {
@@ -59,4 +64,5 @@ async function getSummary(summary: string) {
   const output = llm.call(
     `You are an Ai that has been tasked with summarizing the output of other ais, the other ais output a summary of a chunk of a transcription. Please summarize the following: ${summaryText}`
   );
+  return output;
 }
