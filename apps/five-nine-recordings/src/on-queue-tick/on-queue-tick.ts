@@ -80,8 +80,9 @@ async function execTranscription(path: string) {
   const newPath = `${transcriptionPath}/${fileName}.txt`;
   console.log('reading transcription');
   const fileContent = (await readFileAsync(newPath, 'utf-8')) as any;
-  console.log('starting summary');
+  console.log('running masking algorithm');
   const maskedFileContent = maskCreditCard(fileContent);
+  console.log('starting summary');
   const summary = await getSummary(maskedFileContent);
   console.log('identifying call');
   console.log('tidying summary');
