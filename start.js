@@ -1,4 +1,4 @@
-import { spawn, execSync } from 'child_process';
+const { spawn, execSync } = require('child_process');
 
 function start() {
   const shell = spawn('node ./dist/apps/five-nine-recordings/main.js');
