@@ -55,7 +55,7 @@ async function execTranscription(path: string) {
   const newPath = `${transcriptionPath}/${fileName}.txt`;
   console.log('reading transcription');
   const fileContent = readFileSync(newPath, 'utf-8');
-  console.log('starting suppary');
+  console.log('starting summary');
   const summary = await getSummary(fileContent);
   console.log('identifying call');
   const ids = identifyCall(path);
@@ -101,7 +101,8 @@ function tidySummary(summary: string, repName: string) {
 
 function identifyCall(path: string) {
   console.log('identifying call');
-  const [phone1, phone2] = path
+  const lastEl = path.split('/').pop();
+  const [phone1, phone2] = lastEl
     .split('by')[0]
     .split('-')
     .map((s) => s.trim());
@@ -117,7 +118,12 @@ function identifyCall(path: string) {
     '8446482229',
     '8447351800',
   ];
-  const repName = path.split('by')[1].split(' @ ')[0].trim().split('@')[0];
+  const repName = path
+    .split('by')[1]
+    .split(' @ ')[0]
+    .trim()
+    .split('@')[0]
+    .slice(0, -1);
   const type = internalNumbers.includes(phone1) ? 'inbound' : 'outbound';
   const guestPhone = type === 'inbound' ? phone2 : phone1;
   return { phone1, phone2, type, guestPhone, repName };
