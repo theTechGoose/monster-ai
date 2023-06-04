@@ -1,7 +1,12 @@
 const { spawn, execSync } = require('child_process');
+const path = require('path');
 
 function start() {
-  const shell = spawn('node ./dist/apps/five-nine-recordings/main.js');
+  const pathToApp = path.join(
+    __dirname,
+    'dist/apps/five-nine-recordings/main.js'
+  );
+  const shell = spawn(pathToApp);
   shell.stdout.on('data', (data) => {
     console.log(data);
   });
