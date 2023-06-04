@@ -158,7 +158,7 @@ async function getSummary(summary: string) {
     `This is a list of summaries of one phone call between a guest service agent and a guest of a vacation sales company.Please do not include any names in your summaries, refer to the guest as the guest and the agent as the team-member. The list of summaries is separated by \n\n please take all of these summaries and turn it into a single summary where all of the relevent points, misunderstandings or issues are stated. make the output a bulleted list of points: ${summaryText}`
   );
 
-  return maskCreditCards(output);
+  return maskCreditCard(output);
 }
 
 function tidySummary(summary: string, ids: ReturnType<typeof identifyCall>) {
@@ -174,20 +174,6 @@ function tidySummary(summary: string, ids: ReturnType<typeof identifyCall>) {
     .join(repName);
   output = `${ids.type} call on ${ids.guestPhone} by ${ids.fullRep}: \n\n ${output}`;
   return output;
-}
-
-function maskCreditCards(str: string) {
-  return str.replace(/(\D*\d){14,16}\D*/g, function (match) {
-    // To count the digits in the match
-    var digits = match.replace(/\D/g, '').length;
-
-    // Only replace those matches which have 14, 15, or 16 digits
-    if (digits >= 14 && digits <= 16) {
-      return match.replace(/\d/g, '*');
-    }
-    // Don't replace other matches
-    return match;
-  });
 }
 
 function identifyCall(path: string) {
@@ -214,4 +200,49 @@ function identifyCall(path: string) {
   const type = internalNumbers.includes(phone1) ? 'outbound' : 'inbound';
   const guestPhone = type === 'outbound' ? phone2 : phone1;
   return { phone1, phone2, type, guestPhone, repName, fullRep };
+}
+
+function maskCreditCard(text: string) {
+  // Regex to identify probable card numbers
+  let potentialCardNumber = /\b(?:\d[\s-.,]*?){13,19}\b/g;
+
+  let maskedText = text.replace(potentialCardNumber, function (match: string) {
+    // Remove non-digit characters
+    let justNumbers = match.replace(/\D/g, '');
+    console.log(`found potential cc match ${match}`);
+
+    // Validate length and Luhn algorithm
+    if (
+      justNumbers.length >= 13 &&
+      justNumbers.length <= 19 &&
+      luhnCheck(justNumbers)
+    ) {
+      console.log(`${match} positive for luhn discarding`);
+
+      return 'XXXX-XXXX-XXXX-XXXX';
+    } else {
+      console.log(`${match} negative for luhn passing through`);
+      return match;
+    }
+  });
+
+  return maskedText;
+}
+
+function luhnCheck(value: string) {
+  let sum = 0;
+  let shouldDouble = false;
+
+  for (let i = value.length - 1; i >= 0; i--) {
+    let digit = parseInt(value.charAt(i));
+
+    if (shouldDouble) {
+      if ((digit *= 2) > 9) digit -= 9;
+    }
+
+    sum += digit;
+    shouldDouble = !shouldDouble;
+  }
+
+  return sum % 10 == 0;
 }
