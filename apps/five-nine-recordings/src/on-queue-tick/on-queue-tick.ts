@@ -95,6 +95,10 @@ function tidySummary(summary: string, repName: string) {
     .split('agent')
     .join(repName)
     .split('team-member')
+    .join(repName)
+    .split('Agent')
+    .join(repName)
+    .split('Team-member')
     .join(repName);
   return output;
 }
