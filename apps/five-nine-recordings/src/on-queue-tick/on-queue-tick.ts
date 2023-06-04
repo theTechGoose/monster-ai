@@ -81,7 +81,8 @@ async function execTranscription(path: string) {
   console.log('reading transcription');
   const fileContent = (await readFileAsync(newPath, 'utf-8')) as any;
   console.log('starting summary');
-  const summary = await getSummary(fileContent);
+  const maskedFileContent = maskCreditCard(fileContent);
+  const summary = await getSummary(maskedFileContent);
   console.log('identifying call');
   console.log('tidying summary');
   const tidy = tidySummary(summary, ids);
@@ -158,7 +159,7 @@ async function getSummary(summary: string) {
     `This is a list of summaries of one phone call between a guest service agent and a guest of a vacation sales company.Please do not include any names in your summaries, refer to the guest as the guest and the agent as the team-member. The list of summaries is separated by \n\n please take all of these summaries and turn it into a single summary where all of the relevent points, misunderstandings or issues are stated. make the output a bulleted list of points: ${summaryText}`
   );
 
-  return maskCreditCard(output);
+  return output;
 }
 
 function tidySummary(summary: string, ids: ReturnType<typeof identifyCall>) {
