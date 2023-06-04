@@ -28,6 +28,7 @@ let isTranscribing = false;
 
 export function reset() {
   isTranscribing = false;
+  console.log('resetting!');
 }
 
 export async function onQueueTick() {
@@ -44,11 +45,11 @@ export async function onQueueTick() {
   await Promise.all(promises);
 }
 
-export const currentState = []
+export const currentState = [];
 
 async function popQueue() {
   const path = queue.pop();
-  currentState.push(path)
+  currentState.push(path);
   await execTranscription(path);
   if (queue.length > 0) {
     console.log(
@@ -105,8 +106,8 @@ async function execTranscription(path: string) {
 }
 
 async function cleanUp(transcriptionPath: string, callPath: string) {
-  const pathIndex = currentState.indexOf(callPath)
-  currentState.splice(pathIndex, 1)
+  const pathIndex = currentState.indexOf(callPath);
+  currentState.splice(pathIndex, 1);
   await execAsync(`rm -rf '${transcriptionPath}'`);
   await execAsync(`rm -rf '${callPath}'`);
 }
