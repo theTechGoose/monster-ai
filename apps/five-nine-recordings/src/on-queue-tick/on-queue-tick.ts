@@ -35,7 +35,7 @@ export async function onQueueTick() {
   if (queue.length === 0) return;
   isTranscribing = true;
   console.log(`Elements have been added to the queue. Length: ${queue.length}`);
-  const threads = 2;
+  const threads = 5;
   const promises = [];
   for (let i = 0; i < threads; i++) {
     const p = popQueue();
