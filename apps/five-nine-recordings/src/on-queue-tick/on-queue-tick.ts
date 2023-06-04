@@ -15,10 +15,6 @@ import os from 'os';
 
 // const db = firestore();
 // const bucket = storage();
-const llm = new OpenAI({
-  modelName: 'gpt-3.5-turbo',
-  openAIApiKey: process.env.OPEN_AI_KEY,
-});
 
 const textSplitter = new RecursiveCharacterTextSplitter({
   chunkSize: 1000,
@@ -28,9 +24,7 @@ let isTranscribing = false;
 
 export function resetTranscriptionState() {
   isTranscribing = false;
-  
 }
-
 
 const promises = [];
 
@@ -38,7 +32,6 @@ export function reset() {
   const q = popQueue();
   promises.push(q);
 }
-
 
 export async function onQueueTick() {
   if (isTranscribing) return;
@@ -161,6 +154,10 @@ async function sendToCrm(
 }
 
 async function getSummary(summary: string) {
+  const llm = new OpenAI({
+    modelName: 'gpt-3.5-turbo',
+    openAIApiKey: process.env.OPEN_AI_KEY,
+  });
   const chunks = await textSplitter.splitText(summary);
   const summaryChunks = await Promise.all(
     chunks.map(async (chunk) => {
