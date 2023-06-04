@@ -38,8 +38,12 @@ export async function onQueueTick() {
   console.log(`Elements have been added to the queue. Length: ${queue.length}`);
   const threads = 5;
   const promises = [];
-  for (let i = 0; i < threads; i++) {
+  for (let i = 1; i < threads; i++) {
+    console.log(`Starting thread ${i} of ${threads}`);
     const p = popQueue();
+    await new Promise((r) => {
+      setTimeout(r, 60_000);
+    });
     promises.push(p);
   }
   await Promise.all(promises);
