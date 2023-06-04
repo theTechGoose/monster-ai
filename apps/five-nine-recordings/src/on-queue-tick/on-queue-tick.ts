@@ -65,7 +65,7 @@ async function execTranscription(path: string) {
   console.log(ids);
   console.log(tidy);
   console.log('sending request');
-  const response = await senToCrm(ids.guestPhone, tidy, 'test');
+  const response = await senToCrm(ids.guestPhone, tidy, 'prod');
   console.log(response);
   console.log('cleaning up');
   cleanUp(transcriptionPath, path);
