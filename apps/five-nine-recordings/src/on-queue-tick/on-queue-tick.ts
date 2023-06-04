@@ -122,13 +122,9 @@ function identifyCall(path: string) {
     '8446482229',
     '8447351800',
   ];
-  const repName = path
-    .split('by')[1]
-    .split(' @ ')[0]
-    .trim()
-    .split('@')[0]
-    .slice(0, -1);
+  const fullRep = path.split('by')[1].split(' @ ')[0].trim();
+  const repName = fullRep.split('@')[0].slice(0, -1);
   const type = internalNumbers.includes(phone1) ? 'outbound' : 'inbound';
   const guestPhone = type === 'outbound' ? phone2 : phone1;
-  return { phone1, phone2, type, guestPhone, repName };
+  return { phone1, phone2, type, guestPhone, repName, fullRep };
 }
