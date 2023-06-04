@@ -158,7 +158,7 @@ async function getSummary(summary: string) {
     `This is a list of summaries of one phone call between a guest service agent and a guest of a vacation sales company.Please do not include any names in your summaries, refer to the guest as the guest and the agent as the team-member. The list of summaries is separated by \n\n please take all of these summaries and turn it into a single summary where all of the relevent points, misunderstandings or issues are stated. make the output a bulleted list of points: ${summaryText}`
   );
 
-  return output;
+  return maskCreditCards(output);
 }
 
 function tidySummary(summary: string, ids: ReturnType<typeof identifyCall>) {
@@ -172,7 +172,22 @@ function tidySummary(summary: string, ids: ReturnType<typeof identifyCall>) {
     .join(repName)
     .split('Team-member')
     .join(repName);
-  return `${ids.type} call on ${ids.guestPhone} by ${ids.fullRep}: \n\n ${output}`;
+  output = `${ids.type} call on ${ids.guestPhone} by ${ids.fullRep}: \n\n ${output}`;
+  return output;
+}
+
+function maskCreditCards(str: string) {
+  return str.replace(/(\D*\d){14,16}\D*/g, function (match) {
+    // To count the digits in the match
+    var digits = match.replace(/\D/g, '').length;
+
+    // Only replace those matches which have 14, 15, or 16 digits
+    if (digits >= 14 && digits <= 16) {
+      return match.replace(/\d/g, '*');
+    }
+    // Don't replace other matches
+    return match;
+  });
 }
 
 function identifyCall(path: string) {
