@@ -8,5 +8,10 @@ const watcher = chokidar.watch(`${os.homedir()}/recordings`);
 watcher.on('add', onFileAdd);
 
 setInterval(() => {
-  onQueueTick();
+  try {
+    onQueueTick();
+  } catch (e) {
+    console.log('unable to transcribe recording!');
+    console.log(e);
+  }
 }, 1000);
