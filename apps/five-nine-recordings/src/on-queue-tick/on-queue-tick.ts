@@ -48,7 +48,7 @@ async function execTranscription(path: string) {
   const transcriptionPath = `${os.homedir()}/transcriptions/${id}`;
   execSync(`mkdir ${transcriptionPath}`);
 
-  const command = `whisper ${path} --output_dir ${transcriptionPath} --model tiny.en`;
+  const command = `whisper ${path} --output_dir '${transcriptionPath}' --model tiny.en`;
   execSync(command);
   const fileName = path.split('/').pop().split('.')[0];
   const newPath = `${transcriptionPath}/${fileName}.txt`;
@@ -64,7 +64,7 @@ async function execTranscription(path: string) {
 
 function cleanUp(transcriptionPath: string) {
   console.log('cleaning up');
-  execSync(`rm -rf ${transcriptionPath}`);
+  execSync(`rm -rf '${transcriptionPath}'`);
 }
 
 async function getSummary(summary: string) {
