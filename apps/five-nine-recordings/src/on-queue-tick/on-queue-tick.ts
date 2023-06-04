@@ -38,7 +38,7 @@ export async function onQueueTick() {
   console.log(`Elements have been added to the queue. Length: ${queue.length}`);
   const threads = 3;
   const promises = [];
-  for (let i = 1; i < threads; i++) {
+  for (let i = 0; i < threads; i++) {
     const p = popQueue();
     promises.push(p);
   }
