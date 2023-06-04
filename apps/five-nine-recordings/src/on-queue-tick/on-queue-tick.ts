@@ -1,14 +1,14 @@
 //import { firestore, storage } from 'firebase-admin';
 import { nanoid } from 'nanoid';
-import {promisify} from "util"
-import { execSync } from 'child_process';
-import { readFileSync } from 'fs';
+import { promisify } from 'util';
+import { exec } from 'child_process';
+import { readFile } from 'fs';
 import { OpenAI } from 'langchain/llms/openai';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import axios from 'axios';
 
-const execAsync = promisify(execSync);
-const readFileAsync = promisify(readFileSync);
+const execAsync = promisify(exec);
+const readFileAsync = promisify(readFile);
 
 import { queue } from '../on-file-add/on-file-add';
 import os from 'os';
@@ -79,7 +79,7 @@ async function execTranscription(path: string) {
   const fileName = path.split('/').pop().split('.wav')[0];
   const newPath = `${transcriptionPath}/${fileName}.txt`;
   console.log('reading transcription');
-  const fileContent = await readFileAsync(newPath, 'utf-8') as any;
+  const fileContent = (await readFileAsync(newPath, 'utf-8')) as any;
   console.log('starting summary');
   const summary = await getSummary(fileContent);
   console.log('identifying call');
@@ -200,5 +200,3 @@ function identifyCall(path: string) {
   const guestPhone = type === 'outbound' ? phone2 : phone1;
   return { phone1, phone2, type, guestPhone, repName, fullRep };
 }
-
-
