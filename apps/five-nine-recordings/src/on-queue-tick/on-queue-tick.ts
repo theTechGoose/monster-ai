@@ -4,7 +4,7 @@ import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
 import { OpenAI } from 'langchain/llms/openai';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import axios from "axios"
+import axios from 'axios';
 
 import { queue } from '../on-file-add/on-file-add';
 import os from 'os';
@@ -76,17 +76,25 @@ function cleanUp(transcriptionPath: string, callPath: string) {
   execSync(`rm -rf '${callPath}'`);
 }
 
-async function senToCrm(phone: string, transcription: string, target: 'test' | 'prod') {
-  const testUrl = 'https://rofer-server.ngrok.io/monster-mono-repo/us-central1'
-  const prodUrl = 'https://us-central1-monster-mono-repo-beta.cloudfunctions.net'
-  const url = target === 'test' ? testUrl : prodUrl
-  const final = `${url}/api/utils/save-call-transcription`
+async function senToCrm(
+  phone: string,
+  transcription: string,
+  target: 'test' | 'prod'
+) {
+  const testUrl = 'https://rofer-server.ngrok.io/monster-mono-repo/us-central1';
+  const prodUrl =
+    'https://us-central1-monster-mono-repo-beta.cloudfunctions.net';
+  const url = target === 'test' ? testUrl : prodUrl;
+  const final = `${url}/api/utils/save-call-transcription`;
   const payload = {
     phone,
-    transcription
-  }
-  const request = await axios.post(final, payload)
-  return request.data
+    transcription,
+  };
+  const headers = {
+    Authorization: 'Basic cmFmYXNCYWNrZW5kOnBpenphVGltZTIwMDAh',
+  };
+  const request = await axios.post(final, payload, { headers });
+  return request.data;
 }
 
 async function getSummary(summary: string) {
