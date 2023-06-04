@@ -51,7 +51,7 @@ async function execTranscription(path: string) {
   const command = `whisper "${path}" --output_dir "${transcriptionPath}" --model tiny.en`;
   execSync(command);
   console.log('done transcribing');
-  const fileName = path.split('/').pop().split('.')[0];
+  const fileName = path.split('/').pop().split('.wav')[0];
   const newPath = `${transcriptionPath}/${fileName}.txt`;
   console.log('reading transcription');
   const fileContent = readFileSync(newPath, 'utf-8');
