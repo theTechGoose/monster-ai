@@ -1,5 +1,5 @@
-import { config } from 'dotenv';
-config({ path: '/home/raphael/monster-ai/.env' });
+import * as env from 'dotenv';
+env.config({ path: '/home/raphael/monster-ai/.env' });
 import chokidar from 'chokidar';
 import os from 'os';
 import {
