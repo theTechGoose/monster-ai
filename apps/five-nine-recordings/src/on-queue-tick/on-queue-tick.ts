@@ -43,32 +43,36 @@ async function popQueue() {
 }
 
 async function execTranscription(path: string) {
-  console.log(`Transcribing ${path}`);
   const id = nanoid();
   const transcriptionPath = `${os.homedir()}/transcriptions/${id}`;
-  execSync(`mkdir ${transcriptionPath}`);
-
-  const command = `whisper '${path}' --output_dir ${transcriptionPath} --model tiny.en`;
+  console.log(`Making transcription directory ${transcriptionPath}`);
+  execSync(`mkdir "${transcriptionPath}"`);
+  console.log(`Transcribing ${path}`);
+  const command = `whisper "${path}" --output_dir "${transcriptionPath}" --model tiny.en`;
   execSync(command);
+  console.log('done transcribing');
   const fileName = path.split('/').pop().split('.')[0];
   const newPath = `${transcriptionPath}/${fileName}.txt`;
+  console.log('reading transcription');
   const fileContent = readFileSync(newPath, 'utf-8');
+  console.log('starting suppary');
   const summary = await getSummary(fileContent);
+  console.log('identifying call');
   const ids = identifyCall(path);
+  console.log('tidying summary');
   const tidy = tidySummary(summary, ids.repName);
   console.log(ids);
   console.log(tidy);
 
+  console.log('cleaning up');
   cleanUp(transcriptionPath);
 }
 
 function cleanUp(transcriptionPath: string) {
-  console.log('cleaning up');
   execSync(`rm -rf '${transcriptionPath}'`);
 }
 
 async function getSummary(summary: string) {
-  console.log(`begining summarization`);
   const chunks = await textSplitter.splitText(summary);
   const summaryChunks = await Promise.all(
     chunks.map(async (chunk) => {
@@ -77,8 +81,6 @@ async function getSummary(summary: string) {
       );
     })
   );
-
-  console.log('begining summarization of summaries');
 
   const summaryText = summaryChunks.join('\n\n');
   let output = await llm.call(
