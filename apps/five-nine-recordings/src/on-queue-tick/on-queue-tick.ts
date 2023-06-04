@@ -48,7 +48,7 @@ export async function onQueueTick() {
 export const currentState = [];
 
 async function popQueue() {
-  const path = queue.pop();
+  const path = queue.shift();
   currentState.push(path);
   await execTranscription(path);
   if (queue.length > 0) {
