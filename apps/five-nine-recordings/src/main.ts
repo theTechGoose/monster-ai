@@ -5,11 +5,19 @@ import {
   onQueueTick,
   reset,
   currentState,
+  resetTranscriptionState,
 } from './on-queue-tick/on-queue-tick';
 import { onFileAdd } from './on-file-add/on-file-add';
 
 const watcher = chokidar.watch(`${os.homedir()}/recordings`);
 watcher.on('add', onFileAdd);
+
+process.on('unhandledRejection', () => {
+  console.log('unhandled rejection!');
+  console.log('resetting state!');
+  resetTranscriptionState();
+  onQueueTick();
+});
 
 setInterval(async () => {
   try {

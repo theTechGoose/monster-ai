@@ -25,6 +25,13 @@ const textSplitter = new RecursiveCharacterTextSplitter({
 });
 
 let isTranscribing = false;
+
+export function resetTranscriptionState() {
+  isTranscribing = false;
+  
+}
+
+
 const promises = [];
 
 export function reset() {
@@ -32,10 +39,6 @@ export function reset() {
   promises.push(q);
 }
 
-process.on('unhandledRejection', () => {
-  isTranscribing = false;
-  onQueueTick();
-});
 
 export async function onQueueTick() {
   if (isTranscribing) return;
