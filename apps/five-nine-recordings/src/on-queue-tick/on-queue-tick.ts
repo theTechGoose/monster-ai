@@ -25,10 +25,11 @@ const textSplitter = new RecursiveCharacterTextSplitter({
 });
 
 let isTranscribing = false;
+const promises = [];
 
 export function reset() {
-  isTranscribing = false;
-  console.log('resetting!');
+  const q = popQueue();
+  promises.push(q);
 }
 
 export async function onQueueTick() {
@@ -36,13 +37,13 @@ export async function onQueueTick() {
   if (queue.length === 0) return;
   isTranscribing = true;
   console.log(`Elements have been added to the queue. Length: ${queue.length}`);
-  const threads = 3;
-  const promises = [];
+  const threads = 4;
   for (let i = 0; i < threads; i++) {
     const p = popQueue();
     promises.push(p);
   }
   await Promise.all(promises);
+  isTranscribing = false;
 }
 
 export const currentState = [];
@@ -55,10 +56,8 @@ async function popQueue() {
     console.log(
       `Detected another element in the queue. Length ${queue.length}`
     );
-
     await popQueue();
   }
-  isTranscribing = false;
 }
 
 async function execTranscription(path: string) {
@@ -203,8 +202,8 @@ function identifyCall(path: string) {
     '8446482229',
     '8447351800',
   ];
-  const fullRep = path.split('by')[1].split(' @ ')[0].trim();
-  const repName = fullRep.split('@')[0].slice(0, -1);
+  const fullRep = path.split('by')[1].split(' @ ')[0].trim() || 'Unknown';
+  const repName = fullRep.split('@')[0].slice(0, -1) || 'team-member';
   const type = internalNumbers.includes(phone1) ? 'outbound' : 'inbound';
   const guestPhone = type === 'outbound' ? phone2 : phone1;
   return { phone1, phone2, type, guestPhone, repName, fullRep };
