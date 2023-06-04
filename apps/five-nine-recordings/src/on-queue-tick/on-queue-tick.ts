@@ -128,7 +128,7 @@ function identifyCall(path: string) {
     .trim()
     .split('@')[0]
     .slice(0, -1);
-  const type = internalNumbers.includes(phone1) ? 'inbound' : 'outbound';
-  const guestPhone = type === 'inbound' ? phone2 : phone1;
+  const type = internalNumbers.includes(phone1) ? 'outbound' : 'inbound';
+  const guestPhone = type === 'outbound' ? phone2 : phone1;
   return { phone1, phone2, type, guestPhone, repName };
 }
