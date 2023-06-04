@@ -1,4 +1,10 @@
-import 'dotenv/config';
+import * as env from 'dotenv';
+import { join } from 'path';
+const envPath = join(__dirname, '../../..', '.env');
+console.log(envPath);
+
+env.config({ path: envPath });
+
 import chokidar from 'chokidar';
 import os from 'os';
 import {
