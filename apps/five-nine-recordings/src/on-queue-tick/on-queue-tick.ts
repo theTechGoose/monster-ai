@@ -4,6 +4,7 @@ import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
 import { OpenAI } from 'langchain/llms/openai';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import axios from "axios"
 
 import { queue } from '../on-file-add/on-file-add';
 import os from 'os';
@@ -60,16 +61,32 @@ async function execTranscription(path: string) {
   console.log('identifying call');
   const ids = identifyCall(path);
   console.log('tidying summary');
-  const tidy = tidySummary(summary, ids.repName);
+  const tidy = tidySummary(summary, ids);
   console.log(ids);
   console.log(tidy);
-
+  console.log('sending request');
+  const response = await senToCrm(ids.guestPhone, tidy, 'test');
+  console.log(response);
   console.log('cleaning up');
-  cleanUp(transcriptionPath);
+  cleanUp(transcriptionPath, path);
 }
 
-function cleanUp(transcriptionPath: string) {
+function cleanUp(transcriptionPath: string, callPath: string) {
   execSync(`rm -rf '${transcriptionPath}'`);
+  execSync(`rm -rf '${callPath}'`);
+}
+
+async function senToCrm(phone: string, transcription: string, target: 'test' | 'prod') {
+  const testUrl = 'https://rofer-server.ngrok.io/monster-mono-repo/us-central1'
+  const prodUrl = 'https://us-central1-monster-mono-repo-beta.cloudfunctions.net'
+  const url = target === 'test' ? testUrl : prodUrl
+  const final = `${url}/api/utils/save-call-transcription`
+  const payload = {
+    phone,
+    transcription
+  }
+  const request = await axios.post(final, payload)
+  return request.data
 }
 
 async function getSummary(summary: string) {
@@ -90,7 +107,8 @@ async function getSummary(summary: string) {
   return output;
 }
 
-function tidySummary(summary: string, repName: string) {
+function tidySummary(summary: string, ids: ReturnType<typeof identifyCall>) {
+  const repName = ids.repName;
   let output = summary
     .split('agent')
     .join(repName)
@@ -100,7 +118,7 @@ function tidySummary(summary: string, repName: string) {
     .join(repName)
     .split('Team-member')
     .join(repName);
-  return output;
+  return `${ids.type} call on ${ids.guestPhone} by ${ids.fullRep}: \n\n ${output}`;
 }
 
 function identifyCall(path: string) {
