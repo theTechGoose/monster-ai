@@ -58,7 +58,7 @@ async function popQueue() {
 }
 
 async function execTranscription(path: string) {
-  const env = 'test';
+  const env = 'prod';
   const ids = identifyCall(path);
   console.log('looking for result in the crm');
   const foundResult = await findInCrm(ids.guestPhone, env);
