@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import chokidar from 'chokidar';
 import os from 'os';
-import { onQueueTick } from './on-queue-tick/on-queue-tick';
+import { onQueueTick, reset } from './on-queue-tick/on-queue-tick';
 import { onFileAdd } from './on-file-add/on-file-add';
 
 const watcher = chokidar.watch(`${os.homedir()}/recordings`);
@@ -13,5 +13,6 @@ setInterval(async () => {
   } catch (e) {
     console.log('unable to transcribe recording!');
     console.log(e);
+    reset();
   }
 }, 1000);

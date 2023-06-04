@@ -22,6 +22,10 @@ const textSplitter = new RecursiveCharacterTextSplitter({
 
 let isTranscribing = false;
 
+export function reset() {
+  isTranscribing = false;
+}
+
 export async function onQueueTick() {
   if (isTranscribing) return;
   if (queue.length === 0) return;
@@ -44,10 +48,20 @@ async function popQueue() {
 }
 
 async function execTranscription(path: string) {
+  const env = 'test';
+  const ids = identifyCall(path);
+  console.log('looking for result in the crm');
+  const foundResult = await findInCrm(ids.guestPhone, env);
+  console.log(foundResult);
   const id = nanoid();
   const transcriptionPath = `${os.homedir()}/transcriptions/${id}`;
   console.log(`Making transcription directory ${transcriptionPath}`);
   execSync(`mkdir "${transcriptionPath}"`);
+  if (!foundResult.ids) {
+    console.log('No call found in CRM');
+    cleanUp(transcriptionPath, path);
+    return;
+  }
   console.log(`Transcribing ${path}`);
   const command = `whisper "${path}" --output_dir "${transcriptionPath}" --model tiny.en`;
   execSync(command);
@@ -59,13 +73,17 @@ async function execTranscription(path: string) {
   console.log('starting summary');
   const summary = await getSummary(fileContent);
   console.log('identifying call');
-  const ids = identifyCall(path);
   console.log('tidying summary');
   const tidy = tidySummary(summary, ids);
   console.log(ids);
   console.log(tidy);
   console.log('sending request');
-  const response = await senToCrm(ids.guestPhone, tidy, 'prod');
+  const response = await sendToCrm(
+    foundResult.ids,
+    foundResult.type,
+    tidy,
+    env
+  );
   console.log(response);
   console.log('cleaning up');
   cleanUp(transcriptionPath, path);
@@ -76,8 +94,25 @@ function cleanUp(transcriptionPath: string, callPath: string) {
   execSync(`rm -rf '${callPath}'`);
 }
 
-async function senToCrm(
-  phone: string,
+async function findInCrm(phone: string, target: 'test' | 'prod') {
+  const testUrl = 'https://rofer-server.ngrok.io/monster-mono-repo/us-central1';
+  const prodUrl =
+    'https://us-central1-monster-mono-repo-beta.cloudfunctions.net';
+  const url = target === 'test' ? testUrl : prodUrl;
+  const final = `${url}/api/utils/find-call`;
+  const payload = {
+    phone,
+  };
+  const headers = {
+    Authorization: 'Basic cmFmYXNCYWNrZW5kOnBpenphVGltZTIwMDAh',
+  };
+  const request = await axios.post(final, payload, { headers });
+  return request.data;
+}
+
+async function sendToCrm(
+  ids: Array<number>,
+  type: string,
   transcription: string,
   target: 'test' | 'prod'
 ) {
@@ -87,7 +122,8 @@ async function senToCrm(
   const url = target === 'test' ? testUrl : prodUrl;
   const final = `${url}/api/utils/save-call-transcription`;
   const payload = {
-    phone,
+    ids,
+    type,
     transcription,
   };
   const headers = {
