@@ -22,12 +22,12 @@ const textSplitter = new RecursiveCharacterTextSplitter({
 
 let isTranscribing = false;
 
-export function onQueueTick() {
+export async function onQueueTick() {
   if (isTranscribing) return;
   if (queue.length === 0) return;
   isTranscribing = true;
   console.log(`Elements have been added to the queue. Length: ${queue.length}`);
-  popQueue();
+  await popQueue();
 }
 
 async function popQueue() {
