@@ -1,10 +1,14 @@
 //import { firestore, storage } from 'firebase-admin';
 import { nanoid } from 'nanoid';
+import {promisify} from "util"
 import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
 import { OpenAI } from 'langchain/llms/openai';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import axios from 'axios';
+
+const execAsync = promisify(execSync);
+const readFileAsync = promisify(readFileSync);
 
 import { queue } from '../on-file-add/on-file-add';
 import os from 'os';
@@ -62,7 +66,7 @@ async function execTranscription(path: string) {
   const id = nanoid();
   const transcriptionPath = `${os.homedir()}/transcriptions/${id}`;
   console.log(`Making transcription directory ${transcriptionPath}`);
-  execSync(`mkdir "${transcriptionPath}"`);
+  await execAsync(`mkdir "${transcriptionPath}"`);
   if (!foundResult.ids) {
     console.log('No call found in CRM');
     cleanUp(transcriptionPath, path);
@@ -70,12 +74,12 @@ async function execTranscription(path: string) {
   }
   console.log(`Transcribing ${path}`);
   const command = `whisper "${path}" --output_dir "${transcriptionPath}" --model tiny.en`;
-  execSync(command);
+  await execAsync(command);
   console.log('done transcribing');
   const fileName = path.split('/').pop().split('.wav')[0];
   const newPath = `${transcriptionPath}/${fileName}.txt`;
   console.log('reading transcription');
-  const fileContent = readFileSync(newPath, 'utf-8');
+  const fileContent = await readFileAsync(newPath, 'utf-8') as any;
   console.log('starting summary');
   const summary = await getSummary(fileContent);
   console.log('identifying call');
@@ -92,12 +96,12 @@ async function execTranscription(path: string) {
   );
   console.log(response);
   console.log('cleaning up');
-  cleanUp(transcriptionPath, path);
+  await cleanUp(transcriptionPath, path);
 }
 
-function cleanUp(transcriptionPath: string, callPath: string) {
-  execSync(`rm -rf '${transcriptionPath}'`);
-  execSync(`rm -rf '${callPath}'`);
+async function cleanUp(transcriptionPath: string, callPath: string) {
+  await execAsync(`rm -rf '${transcriptionPath}'`);
+  await execAsync(`rm -rf '${callPath}'`);
 }
 
 async function findInCrm(phone: string, target: 'test' | 'prod') {
@@ -196,3 +200,5 @@ function identifyCall(path: string) {
   const guestPhone = type === 'outbound' ? phone2 : phone1;
   return { phone1, phone2, type, guestPhone, repName, fullRep };
 }
+
+
