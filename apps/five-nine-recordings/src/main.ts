@@ -14,8 +14,6 @@ const watcher = chokidar.watch(`${os.homedir()}/recordings`);
 watcher.on('add', onFileAdd);
 
 process.on('unhandledRejection', () => {
-  console.log('unhandled rejection!');
-  console.log('resetting state!');
   process.exit(1);
 });
 

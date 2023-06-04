@@ -9,5 +9,5 @@ export function onFileAdd(path: string, type: 'front' | 'back' = 'front') {
     const fileName = path.split('/').pop();
     console.log(`File added to queue ${fileName}`);
     queue.push(path);
-  }, 30_000);
+  }, 5_000);
 }
