@@ -15,8 +15,7 @@ watcher.on('add', onFileAdd);
 process.on('unhandledRejection', () => {
   console.log('unhandled rejection!');
   console.log('resetting state!');
-  resetTranscriptionState();
-  onQueueTick();
+  process.exit(1);
 });
 
 setInterval(async () => {
