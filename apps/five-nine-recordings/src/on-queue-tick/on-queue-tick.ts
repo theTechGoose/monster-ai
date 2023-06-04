@@ -62,6 +62,7 @@ async function popQueue() {
 
 async function execTranscription(path: string) {
   const env = 'prod';
+  if (!path) return;
   const ids = identifyCall(path);
   console.log('looking for result in the crm');
   const foundResult = await findInCrm(ids.guestPhone, env);
@@ -184,7 +185,7 @@ function tidySummary(summary: string, ids: ReturnType<typeof identifyCall>) {
 }
 
 function identifyCall(path: string) {
-  console.log('identifying call');
+  console.log(`identifying call, path: ${path}`);
   const lastEl = path.split('/').pop();
   const [phone1, phone2] = lastEl
     .split('by')[0]
