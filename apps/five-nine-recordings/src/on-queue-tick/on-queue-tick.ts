@@ -32,6 +32,11 @@ export function reset() {
   promises.push(q);
 }
 
+process.on('unhandledRejection', () => {
+  isTranscribing = false;
+  onQueueTick();
+});
+
 export async function onQueueTick() {
   if (isTranscribing) return;
   if (queue.length === 0) return;
@@ -52,6 +57,7 @@ async function popQueue() {
   const path = queue.shift();
   currentState.push(path);
   await execTranscription(path);
+
   if (queue.length > 0) {
     console.log(
       `Detected another element in the queue. Length ${queue.length}`
