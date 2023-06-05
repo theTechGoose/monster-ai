@@ -27,8 +27,8 @@ const textSplitter = new RecursiveCharacterTextSplitter({
 let isTranscribing = false;
 
 export function reset(path?: string) {
-  isTranscribing = false;
   if (path) {
+    console.log(`resetting path to be redone later ${path}`);
     queue.unshift(path);
   }
 }
@@ -80,7 +80,7 @@ async function execTranscription(path: string) {
   await execAsync(`mkdir "${transcriptionPath}"`);
   if (!foundResult.ids) {
     console.log('No call found in CRM');
-    await cleanUp(transcriptionPath, path);
+    await cleanUp(transcriptionPath);
     return;
   }
   console.log(`Transcribing ${path}`);
@@ -91,7 +91,7 @@ async function execTranscription(path: string) {
     console.log('failed whisper');
     console.log(e);
     reset(path);
-    await cleanUp(transcriptionPath, path);
+    await cleanUp(transcriptionPath);
     return;
   }
   console.log('done transcribing');
@@ -122,14 +122,18 @@ async function execTranscription(path: string) {
     console.log('could not send result to the crm');
     console.log(e);
     reset(path);
+    await cleanUp(transcriptionPath);
+    return;
   }
   console.log('cleaning up');
   await cleanUp(transcriptionPath, path);
 }
 
-async function cleanUp(transcriptionPath: string, callPath: string) {
+async function cleanUp(transcriptionPath: string, callPath?: string) {
   await execAsync(`rm -rf '${transcriptionPath}'`);
-  await execAsync(`rm -rf '${callPath}'`);
+  if (callPath) {
+    await execAsync(`rm -rf '${callPath}'`);
+  }
 }
 
 async function findInCrm(phone: string, target: 'test' | 'prod') {
@@ -159,10 +163,12 @@ async function sendToCrm(
     'https://us-central1-monster-mono-repo-beta.cloudfunctions.net';
   const url = target === 'test' ? testUrl : prodUrl;
   const final = `${url}/api/utils/save-call-transcription`;
+  const date = new Date().toISOString();
   const payload = {
     ids,
     type,
     transcription,
+    date,
   };
   const headers = {
     Authorization: 'Basic cmFmYXNCYWNrZW5kOnBpenphVGltZTIwMDAh',
