@@ -65,8 +65,13 @@ async function execTranscription(path: string) {
   const ids = identifyCall(path);
   console.log('looking for result in the crm');
   let foundResult = null;
+  const id = nanoid();
+  const transcriptionPath = `${os.homedir()}/transcriptions/${id}`;
+  console.log(`Making transcription directory ${transcriptionPath}`);
+  await execAsync(`mkdir "${transcriptionPath}"`);
   try {
     foundResult = await findInCrm(ids.guestPhone, env);
+    cleanUp(transcriptionPath, path);
   } catch (e) {
     console.log('error finding in crm');
     console.log(e);
@@ -74,10 +79,6 @@ async function execTranscription(path: string) {
     return;
   }
   console.log(foundResult);
-  const id = nanoid();
-  const transcriptionPath = `${os.homedir()}/transcriptions/${id}`;
-  console.log(`Making transcription directory ${transcriptionPath}`);
-  await execAsync(`mkdir "${transcriptionPath}"`);
   if (!foundResult.ids) {
     console.log('No call found in CRM');
     await cleanUp(transcriptionPath);
@@ -85,11 +86,14 @@ async function execTranscription(path: string) {
   }
   console.log(`Transcribing ${path}`);
   try {
-    const command = `whisper "${path}" --output_dir "${transcriptionPath}" --model tiny.en`;
-    await execAsync(command);
+    /////
+    await runWhisper(path, transcriptionPath);
   } catch (e) {
     console.log('failed whisper');
     console.log(e);
+    if (e.messages.includes('Invalid data found when processing input')) {
+      cleanUp(transcriptionPath, path);
+    }
     reset(path);
     await cleanUp(transcriptionPath);
     return;
@@ -102,7 +106,7 @@ async function execTranscription(path: string) {
   console.log('running masking algorithm');
   const maskedFileContent = maskCreditCard(fileContent);
   console.log('starting summary');
-  const summary = await getSummary(maskedFileContent);
+  const summary = await getSummary(maskedFileContent, path);
   console.log('identifying call');
   console.log('tidying summary');
   const tidy = tidySummary(summary, ids);
@@ -129,11 +133,14 @@ async function execTranscription(path: string) {
   await cleanUp(transcriptionPath, path);
 }
 
-async function cleanUp(transcriptionPath: string, callPath?: string) {
-  await execAsync(`rm -rf '${transcriptionPath}'`);
-  if (callPath) {
-    await execAsync(`rm -rf '${callPath}'`);
-  }
+const whisperCache = {};
+async function runWhisper(path: string, transcriptionPath: string) {
+  const cacheEntry = whisperCache[path];
+  if (cacheEntry) return true;
+  const command = `whisper "${path}" --output_dir "${transcriptionPath}" --model tiny.en`;
+  await execAsync(command);
+  whisperCache[path] = true;
+  return true;
 }
 
 async function findInCrm(phone: string, target: 'test' | 'prod') {
@@ -177,7 +184,10 @@ async function sendToCrm(
   return request.data;
 }
 
-async function getSummary(summary: string) {
+const summaryCache = {};
+async function getSummary(summary: string, path: string) {
+  const cacheEntry = summaryCache[path];
+  if (cacheEntry) return cacheEntry;
   const chunks = await textSplitter.splitText(summary);
   const summaryChunks = await Promise.all(
     chunks.map(async (chunk) => {
@@ -191,6 +201,7 @@ async function getSummary(summary: string) {
   let output = await llm.call(
     `This is a list of summaries of one phone call between a guest service agent and a guest of a vacation sales company.Please do not include any names in your summaries, refer to the guest as the guest and the agent as the team-member. The list of summaries is separated by \n\n please take all of these summaries and turn it into a single summary where all of the relevent points, misunderstandings or issues are stated. make the output a bulleted list of points: ${summaryText}`
   );
+  summaryCache[path] = output;
 
   return output;
 }
@@ -279,4 +290,13 @@ function luhnCheck(value: string) {
   }
 
   return sum % 10 == 0;
+}
+
+async function cleanUp(transcriptionPath: string, callPath?: string) {
+  await execAsync(`rm -rf '${transcriptionPath}'`);
+  if (callPath) {
+    await execAsync(`rm -rf '${callPath}'`);
+    if (whisperCache[callPath]) delete whisperCache[callPath];
+    if (summaryCache[callPath]) delete summaryCache[callPath];
+  }
 }
