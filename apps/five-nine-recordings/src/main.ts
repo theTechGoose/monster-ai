@@ -17,9 +17,10 @@ import { onFileAdd } from './on-file-add/on-file-add';
 const watcher = chokidar.watch(`${os.homedir()}/recordings`);
 watcher.on('add', onFileAdd);
 
-process.on('unhandledRejection', () => {
+process.on('unhandledRejection', (reason, promise) => {
   console.log('unhandled rejection!');
   console.log('resetting state!');
+  console.log(`reason: ${reason} promise: ${promise}`);
   process.exit(1);
 });
 
