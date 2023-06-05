@@ -32,6 +32,6 @@ setInterval(async () => {
     currentState.forEach((p) => {
       onFileAdd(p, 'back');
     });
-    reset();
+    //reset();
   }
 }, 1000);

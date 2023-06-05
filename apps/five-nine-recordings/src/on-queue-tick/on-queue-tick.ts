@@ -5,6 +5,7 @@ import { exec } from 'child_process';
 import { readFile } from 'fs';
 import { OpenAI } from 'langchain/llms/openai';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { spawnPromise } from './helpers/execPromise';
 import axios from 'axios';
 
 const execAsync = promisify(exec);
@@ -28,9 +29,12 @@ export function resetTranscriptionState() {
 
 const promises = [];
 
-export function reset() {
+export function reset(path?: string) {
   const q = popQueue();
   promises.push(q);
+  if (path) {
+    queue.unshift(path);
+  }
 }
 
 export async function onQueueTick() {
@@ -68,19 +72,34 @@ async function execTranscription(path: string) {
   const ids = identifyCall(path);
   console.log('looking for result in the crm');
   const foundResult = await findInCrm(ids.guestPhone, env);
+  if (!foundResult) {
+    console.log('post request to crm failed, sending to the back of the queue');
+    reset(path);
+    return;
+  }
   console.log(foundResult);
   const id = nanoid();
   const transcriptionPath = `${os.homedir()}/transcriptions/${id}`;
   console.log(`Making transcription directory ${transcriptionPath}`);
-  await execAsync(`mkdir "${transcriptionPath}"`);
+  await spawnPromise(`mkdir "${transcriptionPath}"`);
   if (!foundResult.ids) {
     console.log('No call found in CRM');
     cleanUp(transcriptionPath, path);
     return;
   }
   console.log(`Transcribing ${path}`);
-  const command = `whisper "${path}" --output_dir "${transcriptionPath}" --model tiny.en`;
-  await execAsync(command);
+  try {
+    await spawnPromise(`whisper "${path}"`, [
+      `--output_dir "${transcriptionPath}"`,
+      `'--model tiny.en'`,
+    ]);
+  } catch (e) {
+    console.log(
+      'failed to run whisper command, putting it at back and trying again'
+    );
+    reset(path);
+    return;
+  }
   console.log('done transcribing');
   const fileName = path.split('/').pop().split('.wav')[0];
   const newPath = `${transcriptionPath}/${fileName}.txt`;
@@ -102,6 +121,12 @@ async function execTranscription(path: string) {
     tidy,
     env
   );
+  if (!response) {
+    console.log('failed to send to crm, putting it at back and trying again');
+    reset(path);
+    cleanUp(transcriptionPath, path);
+    return;
+  }
   console.log(response);
   console.log('cleaning up');
   await cleanUp(transcriptionPath, path);
@@ -110,24 +135,30 @@ async function execTranscription(path: string) {
 async function cleanUp(transcriptionPath: string, callPath: string) {
   const pathIndex = currentState.indexOf(callPath);
   currentState.splice(pathIndex, 1);
-  await execAsync(`rm -rf '${transcriptionPath}'`);
-  await execAsync(`rm -rf '${callPath}'`);
+  await spawnPromise(`rm`, [`-rf '${transcriptionPath}'`]);
+  await spawnPromise(`rm`, [`-rf '${callPath}'`]);
 }
 
 async function findInCrm(phone: string, target: 'test' | 'prod') {
-  const testUrl = 'https://rofer-server.ngrok.io/monster-mono-repo/us-central1';
-  const prodUrl =
-    'https://us-central1-monster-mono-repo-beta.cloudfunctions.net';
-  const url = target === 'test' ? testUrl : prodUrl;
-  const final = `${url}/api/utils/find-call`;
-  const payload = {
-    phone,
-  };
-  const headers = {
-    Authorization: 'Basic cmFmYXNCYWNrZW5kOnBpenphVGltZTIwMDAh',
-  };
-  const request = await axios.post(final, payload, { headers });
-  return request.data;
+  try {
+    const testUrl =
+      'https://rofer-server.ngrok.io/monster-mono-repo/us-central1';
+    const prodUrl =
+      'https://us-central1-monster-mono-repo-beta.cloudfunctions.net';
+    const url = target === 'test' ? testUrl : prodUrl;
+    const final = `${url}/api/utils/find-call`;
+    const payload = {
+      phone,
+    };
+    const headers = {
+      Authorization: 'Basic cmFmYXNCYWNrZW5kOnBpenphVGltZTIwMDAh',
+    };
+    const request = await axios.post(final, payload, { headers });
+    return request.data;
+  } catch {
+    console.log('failed to find call in crm');
+    return null;
+  }
 }
 
 async function sendToCrm(
@@ -136,21 +167,27 @@ async function sendToCrm(
   transcription: string,
   target: 'test' | 'prod'
 ) {
-  const testUrl = 'https://rofer-server.ngrok.io/monster-mono-repo/us-central1';
-  const prodUrl =
-    'https://us-central1-monster-mono-repo-beta.cloudfunctions.net';
-  const url = target === 'test' ? testUrl : prodUrl;
-  const final = `${url}/api/utils/save-call-transcription`;
-  const payload = {
-    ids,
-    type,
-    transcription,
-  };
-  const headers = {
-    Authorization: 'Basic cmFmYXNCYWNrZW5kOnBpenphVGltZTIwMDAh',
-  };
-  const request = await axios.post(final, payload, { headers });
-  return request.data;
+  try {
+    const testUrl =
+      'https://rofer-server.ngrok.io/monster-mono-repo/us-central1';
+    const prodUrl =
+      'https://us-central1-monster-mono-repo-beta.cloudfunctions.net';
+    const url = target === 'test' ? testUrl : prodUrl;
+    const final = `${url}/api/utils/save-call-transcription`;
+    const payload = {
+      ids,
+      type,
+      transcription,
+    };
+    const headers = {
+      Authorization: 'Basic cmFmYXNCYWNrZW5kOnBpenphVGltZTIwMDAh',
+    };
+    const request = await axios.post(final, payload, { headers });
+    return request.data;
+  } catch {
+    console.log('failed to send to crm');
+    return null;
+  }
 }
 
 async function getSummary(summary: string) {
