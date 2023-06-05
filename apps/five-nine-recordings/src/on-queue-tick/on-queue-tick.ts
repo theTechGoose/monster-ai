@@ -26,8 +26,11 @@ const textSplitter = new RecursiveCharacterTextSplitter({
 
 let isTranscribing = false;
 
-export function reset() {
+export function reset(path?: string) {
   isTranscribing = false;
+  if (path) {
+    queue.unshift(path);
+  }
 }
 
 export async function onQueueTick() {
@@ -61,7 +64,15 @@ async function execTranscription(path: string) {
   const env = 'prod';
   const ids = identifyCall(path);
   console.log('looking for result in the crm');
-  const foundResult = await findInCrm(ids.guestPhone, env);
+  let foundResult = null;
+  try {
+    foundResult = await findInCrm(ids.guestPhone, env);
+  } catch (e) {
+    console.log('error finding in crm');
+    console.log(e);
+    reset(path);
+    return;
+  }
   console.log(foundResult);
   const id = nanoid();
   const transcriptionPath = `${os.homedir()}/transcriptions/${id}`;
@@ -69,12 +80,20 @@ async function execTranscription(path: string) {
   await execAsync(`mkdir "${transcriptionPath}"`);
   if (!foundResult.ids) {
     console.log('No call found in CRM');
-    cleanUp(transcriptionPath, path);
+    await cleanUp(transcriptionPath, path);
     return;
   }
   console.log(`Transcribing ${path}`);
-  const command = `whisper "${path}" --output_dir "${transcriptionPath}" --model tiny.en`;
-  await execAsync(command);
+  try {
+    const command = `whisper "${path}" --output_dir "${transcriptionPath}" --model tiny.en`;
+    await execAsync(command);
+  } catch (e) {
+    console.log('failed whisper');
+    console.log(e);
+    reset(path);
+    await cleanUp(transcriptionPath, path);
+    return;
+  }
   console.log('done transcribing');
   const fileName = path.split('/').pop().split('.wav')[0];
   const newPath = `${transcriptionPath}/${fileName}.txt`;
@@ -90,13 +109,20 @@ async function execTranscription(path: string) {
   console.log(ids);
   console.log(tidy);
   console.log('sending request');
-  const response = await sendToCrm(
-    foundResult.ids,
-    foundResult.type,
-    tidy,
-    env
-  );
-  console.log(response);
+
+  try {
+    const response = await sendToCrm(
+      foundResult.ids,
+      foundResult.type,
+      tidy,
+      env
+    );
+    console.log(response);
+  } catch (e) {
+    console.log('could not send result to the crm');
+    console.log(e);
+    reset(path);
+  }
   console.log('cleaning up');
   await cleanUp(transcriptionPath, path);
 }
