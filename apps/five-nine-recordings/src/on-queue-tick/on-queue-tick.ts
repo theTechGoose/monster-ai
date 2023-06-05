@@ -81,7 +81,7 @@ async function execTranscription(path: string) {
   const id = nanoid();
   const transcriptionPath = `${os.homedir()}/transcriptions/${id}`;
   console.log(`Making transcription directory ${transcriptionPath}`);
-  await spawnPromise(`mkdir "${transcriptionPath}"`);
+  await spawnPromise(`mkdir ${transcriptionPath}`);
   if (!foundResult.ids) {
     console.log('No call found in CRM');
     cleanUp(transcriptionPath, path);
