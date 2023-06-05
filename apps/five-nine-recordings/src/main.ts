@@ -14,5 +14,6 @@ setInterval(async () => {
     console.log('********************************************');
     console.log('this should never happen');
     console.log('********************************************');
+    console.log(e);
   }
 }, 1000);
