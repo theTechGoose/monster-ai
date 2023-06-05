@@ -81,7 +81,7 @@ async function execTranscription(path: string) {
   const id = nanoid();
   const transcriptionPath = `${os.homedir()}/transcriptions/${id}`;
   console.log(`Making transcription directory ${transcriptionPath}`);
-  await spawnPromise(`mkdir ${transcriptionPath}`);
+  await spawnPromise(`mkdir`, [`"${transcriptionPath}"`]);
   if (!foundResult.ids) {
     console.log('No call found in CRM');
     cleanUp(transcriptionPath, path);
@@ -89,9 +89,12 @@ async function execTranscription(path: string) {
   }
   console.log(`Transcribing ${path}`);
   try {
-    await spawnPromise(`whisper "${path}"`, [
-      `--output_dir "${transcriptionPath}"`,
-      `'--model tiny.en'`,
+    await spawnPromise(`whisper`, [
+      `"${path}"`,
+      `--output_dir`,
+      `${transcriptionPath}`,
+      `--model`,
+      `tiny.en`,
     ]);
   } catch (e) {
     console.log(
@@ -135,8 +138,8 @@ async function execTranscription(path: string) {
 async function cleanUp(transcriptionPath: string, callPath: string) {
   const pathIndex = currentState.indexOf(callPath);
   currentState.splice(pathIndex, 1);
-  await spawnPromise(`rm`, [`-rf '${transcriptionPath}'`]);
-  await spawnPromise(`rm`, [`-rf '${callPath}'`]);
+  await spawnPromise(`rm`, [`-rf`, `'${transcriptionPath}'`]);
+  await spawnPromise(`rm`, [`-rf`, `'${callPath}'`]);
 }
 
 async function findInCrm(phone: string, target: 'test' | 'prod') {
