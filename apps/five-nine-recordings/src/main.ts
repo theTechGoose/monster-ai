@@ -1,19 +1,8 @@
 import 'dotenv/config';
-import chokidar from 'chokidar';
-import os from 'os';
-import { onQueueTick } from './on-queue-tick/on-queue-tick';
-import { onFileAdd } from './on-file-add/on-file-add';
+import { startCallIdentification } from './v2/call-identification-queue/call-identification';
 
-const watcher = chokidar.watch(`${os.homedir()}/recordings`);
-watcher.on('add', onFileAdd);
+export const ENV = 'prod';
+export const UPDATE_INTERVAL = 1000;
+export const MAX_RETRIES = 3;
 
-setInterval(async () => {
-  try {
-    await onQueueTick();
-  } catch (e) {
-    console.log('********************************************');
-    console.log('this should never happen');
-    console.log('********************************************');
-    console.log(e);
-  }
-}, 1000);
+startCallIdentification();
