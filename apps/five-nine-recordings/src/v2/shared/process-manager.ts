@@ -13,7 +13,7 @@ export class ProcessManager {
       if (!isLive) return acc;
       return acc + 1;
     }, 0);
-    return currentThreads > this.maxThreads;
+    return currentThreads >= this.maxThreads;
   }
 
   getAmountOfTries(id: string) {

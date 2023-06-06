@@ -24,6 +24,7 @@ function listenFiles() {
     let notInQueue = files.filter((f) => !transcriptionQueue.includes(f));
     notInQueue = notInQueue.filter((f) => !pm.getProcesses().includes(f));
     transcriptionQueue = [...transcriptionQueue, ...notInQueue];
+    console.log(pm['processes'])
   }, UPDATE_INTERVAL);
 }
 
@@ -40,11 +41,14 @@ async function newThread() {
 }
 
 async function execThread(path: string) {
+  console.log(`transcribing ${path}`)
   const transcriptionPath = `${os.homedir()}/transcriptions`;
   const command = `whisper "${path}" --output_dir "${transcriptionPath}" --model tiny.en --output_format txt`;
   try {
     await execAsync(command);
     execAsync(`rm "${path}"`);
+    pm.stop(path)
+    pm.cleanUp(path)
   } catch (e) {
     await cleanUpFailedThread(path, e);
   }
