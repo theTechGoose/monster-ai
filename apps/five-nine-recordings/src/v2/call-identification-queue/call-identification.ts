@@ -4,58 +4,16 @@ import { promisify } from 'util';
 import { ENV, MAX_RETRIES, UPDATE_INTERVAL, IDENTIFY_RECORDING_UPDATE_INTERVAL} from '../../main';
 import { exec } from 'child_process';
 import axios from 'axios';
+import {ProcessManager} from "../shared/process-manager"
 
 const execAsync = promisify(exec);
 const readdirAsync = promisify(readdir);
-
-export class ProcessManager {
-  private processes = {};
-  constructor(private maxThreads: number) {}
-
-  isMaxed() {
-    const processEntries = Object.entries(this.processes) as unknown as {
-      count: number;
-      isLive: boolean;
-    }[];
-    const currentThreads = processEntries.reduce((acc, val) => {
-      const isLive = val[1].isLive;
-      if (!isLive) return acc;
-      return acc + 1;
-    }, 0);
-    return currentThreads > this.maxThreads;
-  }
-
-  getAmountOfTries(id: string) {
-    return this.processes[id].count;
-  }
-
-  getProcesses() {
-    return Object.keys(this.processes)
-  }
-
-  start(id: string) {
-    if (!this.processes[id]) this.processes[id] = { count: 0 };
-    this.processes[id].isLive = true;
-    this.processes[id].count++;
-    return id;
-  }
-
-  stop(id: string) {
-    this.processes[id].isLive = false;
-    return id;
-  }
-
-  cleanUp(id: string) {
-    delete this.processes[id];
-    return id;
-  }
-}
 
 let identificationQueue = [];
 
 const pm = new ProcessManager(5);
 
-export async function startCallIdentification() {
+export function startCallIdentification() {
   listenFiles();
   setInterval(newThread, IDENTIFY_RECORDING_UPDATE_INTERVAL );
 }
