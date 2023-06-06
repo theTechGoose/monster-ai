@@ -1,7 +1,7 @@
 import os from 'os';
 import { readdir } from 'fs';
 import { promisify } from 'util';
-import { ENV, MAX_RETRIES, UPDATE_INTERVAL } from '../../main';
+import { ENV, MAX_RETRIES, UPDATE_INTERVAL, IDENTIFY_RECORDING_UPDATE_INTERVAL} from '../../main';
 import { exec } from 'child_process';
 import axios from 'axios';
 
@@ -29,6 +29,10 @@ export class ProcessManager {
     return this.processes[id].count;
   }
 
+  getProcesses() {
+    return Object.keys(this.processes)
+  }
+
   start(id: string) {
     if (!this.processes[id]) this.processes[id] = { count: 0 };
     this.processes[id].isLive = true;
@@ -49,25 +53,29 @@ export class ProcessManager {
 
 let identificationQueue = [];
 
-const pm = new ProcessManager(2);
+const pm = new ProcessManager(5);
 
 export async function startCallIdentification() {
   listenFiles();
-  setInterval(newThread, UPDATE_INTERVAL);
+  setInterval(newThread, IDENTIFY_RECORDING_UPDATE_INTERVAL );
 }
 
 function listenFiles() {
   setInterval(async () => {
     const dir = `${os.homedir()}/recordings`;
-    const files = await readdirAsync(dir);
-    const notInQueue = files.filter((f) => !identificationQueue.includes(f));
+    let files = await readdirAsync(dir);
+    files = files.map(f => `/home/raphael/recordings/${f}`)
+    let notInQueue = files.filter((f) =>  !identificationQueue.includes(f));
+    notInQueue = notInQueue.filter((f) => !pm.getProcesses().includes(f))
+    
     identificationQueue = [...identificationQueue, ...notInQueue];
   }, UPDATE_INTERVAL);
 }
 
 async function newThread() {
-  if (pm.isMaxed) return;
+  if (pm.isMaxed()) return;
   const path = identificationQueue.pop();
+  if(!path) return
   const id = pm.start(path);
   try {
     await execThread(id);
@@ -77,16 +85,24 @@ async function newThread() {
 }
 
 async function execThread(path: string) {
+  try {
   const callInfo = identifyCall(path);
   const foundResult = await findInCrm(callInfo.guestPhone, ENV);
   if (!foundResult.ids) {
+    execAsync(`rm "${path}"`)
+    pm.stop(path)
+    pm.cleanUp(path)
+    return
   }
-  const fileName = `${callInfo.guestPhone}-${
+  const fileName = `${callInfo.guestPhone}..${
     callInfo.repName
-  }--${foundResult.ids.join('-')}`;
+  }..${callInfo.fullRep}--${foundResult.ids.join('-')}`;
   execAsync(`mv "${path}" "${os.homedir()}/toTranscribe/${fileName}.wav"`);
   pm.stop(path);
   pm.cleanUp(path);
+  } catch(e) {
+    cleanUpFailedThread(path, e)
+  }
 }
 
 async function findInCrm(phone: string, target: 'test' | 'prod') {
