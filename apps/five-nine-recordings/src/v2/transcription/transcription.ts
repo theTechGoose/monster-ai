@@ -24,7 +24,6 @@ function listenFiles() {
     let notInQueue = files.filter((f) => !transcriptionQueue.includes(f));
     notInQueue = notInQueue.filter((f) => !pm.getProcesses().includes(f));
     transcriptionQueue = [...transcriptionQueue, ...notInQueue];
-    console.log(pm['processes'])
   }, UPDATE_INTERVAL);
 }
 
@@ -43,7 +42,7 @@ async function newThread() {
 async function execThread(path: string) {
   console.log(`transcribing ${path}`)
   const transcriptionPath = `${os.homedir()}/transcriptions`;
-  const command = `whisper "${path}" --output_dir "${transcriptionPath}" --model tiny.en --output_format txt`;
+  const command = `whisper "${path}" --output_dir "${transcriptionPath}" --model tiny --output_format txt --language en`;
   try {
     await execAsync(command);
     execAsync(`rm "${path}"`);
@@ -55,6 +54,8 @@ async function execThread(path: string) {
 }
 
 async function cleanUpFailedThread(path: string, e: Error) {
+  console.log('Transcription Thread Failed')
+  console.log(e)
   if (e.message.includes('Invalid data found when processing input')) {
     execAsync(`rm "${path}"`);
     pm.cleanUp(path);

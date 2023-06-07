@@ -18,7 +18,7 @@ const pm = new ProcessManager(2);
 
 let summaryQueue = [];
 
-export function startCallTranscription() {
+export function startCallSummary() {
   listenFiles();
   setInterval(newThread, UPDATE_INTERVAL);
 }
@@ -59,23 +59,22 @@ async function execThread(path: string) {
   const contentBuffer = await readFileAsync(path);
   const content = contentBuffer.toString();
   const maskedContent = maskCreditCard(content);
-  let summary = null;
-  try {
-    summary = await getSummary(maskedContent);
-  } catch (e) {
-    cleanUpFailedThread(path, e);
-    return;
-  }
+  const summary = await getSummary(maskedContent);
   const info = getFileInfo(path);
   const tidy = tidySummary(summary, info);
   const fileName = path.split('/').pop();
   const summaryPath = `${os.homedir()}/summaries/${fileName}.txt`;
   await writeFileAsync(summaryPath, tidy);
+  await execAsync(`rm "${path}"`)
+  pm.stop(path)
+  pm.cleanUp(path)
 }
 
 async function cleanUpFailedThread(path: string, e: Error) {
+  console.log('Summary Thread Failed')
+  console.log(e)
   if (pm.getAmountOfTries(path) > 3) {
-    execAsync(`rm "${path}"`);
+    await execAsync(`rm "${path}"`);
     pm.cleanUp(path);
     return;
   }
