@@ -54,7 +54,7 @@ async function execThread(path: string) {
   }
   const fileName = `${callInfo.guestPhone}..${
     callInfo.repName
-  }..${callInfo.fullRep}--${foundResult.ids.join('-')}`;
+  }..${callInfo.fullRep}..${callInfo.type}..${foundResult.ids.join('-')}`;
   execAsync(`mv "${path}" "${os.homedir()}/toTranscribe/${fileName}.wav"`);
   pm.stop(path);
   pm.cleanUp(path);

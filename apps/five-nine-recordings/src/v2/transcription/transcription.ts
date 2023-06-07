@@ -57,7 +57,13 @@ async function execThread(path: string) {
 async function cleanUpFailedThread(path: string, e: Error) {
   if (e.message.includes('Invalid data found when processing input')) {
     execAsync(`rm "${path}"`);
+    pm.cleanUp(path);
+    return;
+  }
+  if(pm.getAmountOfTries(path) > 3) {
+    execAsync(`rm "${path}"`);
+    pm.cleanUp(path);
+    return;
   }
   pm.stop(path);
-  pm.cleanUp(path);
 }
