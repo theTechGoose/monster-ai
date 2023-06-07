@@ -8,6 +8,7 @@ import { exec } from 'child_process';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { OpenAI } from 'langchain/llms/openai';
 import { getFileInfo } from '../shared/get-file-info';
+import chalk from "chalk"
 
 const readFileAsync = promises.readFile;
 const writeFileAsync = promises.writeFile;
@@ -56,24 +57,27 @@ async function newThread() {
 }
 
 async function execThread(path: string) {
+  const fileName = path.split('/').pop();
+  chalk.blue(`Summarizing ${fileName}`)
   const contentBuffer = await readFileAsync(path);
   const content = contentBuffer.toString();
   const maskedContent = maskCreditCard(content);
   const summary = await getSummary(maskedContent);
   const info = getFileInfo(path);
   const tidy = tidySummary(summary, info);
-  const fileName = path.split('/').pop();
   const summaryPath = `${os.homedir()}/summaries/${fileName}.txt`;
   await writeFileAsync(summaryPath, tidy);
   await execAsync(`rm "${path}"`)
+  chalk.blue(`Summary ${fileName} complete`)
   pm.stop(path)
   pm.cleanUp(path)
 }
 
 async function cleanUpFailedThread(path: string, e: Error) {
-  console.log('Summary Thread Failed')
+  chalk.yellow('Summary Thread Failed')
   console.log(e)
   if (pm.getAmountOfTries(path) > 3) {
+    chalk.red('Summary Thread Failed 3 times, deleting file')
     await execAsync(`rm "${path}"`);
     pm.cleanUp(path);
     return;
@@ -97,26 +101,31 @@ function tidySummary(summary: string, ids: ReturnType<typeof getFileInfo>) {
 }
 
 async function getSummary(transcription: string) {
+  chalk.blue('Starting to get summary')
   let chunks = await textSplitter.splitText(transcription);
   let summaryChunks = await getSubSummaries(chunks);
   let summaryText = summaryChunks.join('\n\n');
 
   if (summaryText.length > 12_000) {
+    chalk.yellow('Summary too long, splitting into chunks 1')
     chunks = await textSplitter.splitText(summaryText);
     summaryChunks = await getSubSummaries(chunks);
   }
 
   if (summaryText.length > 12_000) {
+    chalk.yellow('Summary too long, splitting into chunks 2')
     chunks = await textSplitter.splitText(summaryText);
     summaryChunks = await getSubSummaries(chunks);
   }
 
   if (summaryText.length > 12_000) {
+    chalk.yellow('Summary too long, splitting into chunks 3')
     chunks = await textSplitter.splitText(summaryText);
     summaryChunks = await getSubSummaries(chunks);
   }
 
   if (summaryText.length > 12_000) {
+    chalk.yellow('Summary too long, splitting into chunks 4')
     chunks = await textSplitter.splitText(summaryText);
     summaryChunks = await getSubSummaries(chunks);
   }
@@ -145,7 +154,7 @@ function maskCreditCard(text: string) {
   let maskedText = text.replace(potentialCardNumber, function (match: string) {
     // Remove non-digit characters
     let justNumbers = match.replace(/\D/g, '');
-    console.log(`found potential cc match ${match}`);
+    chalk.yellow(`found potential cc match ${match}`);
 
     // Validate length and Luhn algorithm
     if (
@@ -153,11 +162,10 @@ function maskCreditCard(text: string) {
       justNumbers.length <= 19 &&
       luhnCheck(justNumbers)
     ) {
-      console.log(`${match} positive for luhn discarding`);
-
+      chalk.red(`${match} positive for luhn replacing with XXXX-XXXX-XXXX-XXXX`);
       return 'XXXX-XXXX-XXXX-XXXX';
     } else {
-      console.log(`${match} negative for luhn passing through`);
+      chalk.green(`${match} negative for luhn passing value through`);
       return match;
     }
   });

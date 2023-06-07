@@ -4,6 +4,7 @@ import { promisify } from 'util';
 import { UPDATE_INTERVAL } from '../../main';
 import { ProcessManager } from '../shared/process-manager';
 import { exec } from 'child_process';
+import chalk from 'chalk';
 
 const readdirAsync = promisify(readdir);
 const execAsync = promisify(exec);
@@ -40,31 +41,32 @@ async function newThread() {
 }
 
 async function execThread(path: string) {
-  console.log(`transcribing ${path}`)
+  const fileName = path.split('/').pop();
+  chalk.blue(`transcribing ${fileName}`);
   const transcriptionPath = `${os.homedir()}/transcriptions`;
   const command = `whisper "${path}" --output_dir "${transcriptionPath}" --model tiny --output_format txt --language en`;
-  try {
-    await execAsync(command);
-    execAsync(`rm "${path}"`);
-    pm.stop(path)
-    pm.cleanUp(path)
-  } catch (e) {
-    await cleanUpFailedThread(path, e);
-  }
+  await execAsync(command);
+  execAsync(`rm "${path}"`);
+  chalk.blue(`transcribed ${fileName}`);
+  pm.stop(path);
+  pm.cleanUp(path);
 }
 
 async function cleanUpFailedThread(path: string, e: Error) {
-  console.log('Transcription Thread Failed')
-  console.log(e)
+  chalk.yellow('Transcription Thread Failed');
+  console.log(e);
   if (e.message.includes('Invalid data found when processing input')) {
+    chalk.red('Deleting file as error is unrecoverable');
     execAsync(`rm "${path}"`);
     pm.cleanUp(path);
     return;
   }
-  if(pm.getAmountOfTries(path) > 3) {
+  if (pm.getAmountOfTries(path) > 3) {
+    chalk.red('Failed to transcribe file after 3 tries, deleting file');
     execAsync(`rm "${path}"`);
     pm.cleanUp(path);
     return;
   }
+
   pm.stop(path);
 }
