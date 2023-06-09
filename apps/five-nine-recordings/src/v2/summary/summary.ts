@@ -15,7 +15,7 @@ const writeFileAsync = promises.writeFile;
 const readdirAsync = promisify(readdir);
 const execAsync = promisify(exec);
 
-const pm = new ProcessManager(2);
+const pm = new ProcessManager(10);
 
 let summaryQueue = [];
 
@@ -24,9 +24,13 @@ export function startCallSummary() {
   setInterval(newThread, UPDATE_INTERVAL);
 }
 
+
+function createTextSplitter(size: number) {
 const textSplitter = new RecursiveCharacterTextSplitter({
-  chunkSize: 1000,
+  chunkSize: size,
 });
+  return textSplitter
+}
 
 const llm = new OpenAI({
   modelName: 'gpt-3.5-turbo',
@@ -58,7 +62,7 @@ async function newThread() {
 
 async function execThread(path: string) {
   const fileName = path.split('/').pop();
-  chalk.blue(`Summarizing ${fileName}`)
+  console.log(chalk.blue(`Summarizing ${fileName}`))
   const contentBuffer = await readFileAsync(path);
   const content = contentBuffer.toString();
   const maskedContent = maskCreditCard(content);
@@ -68,16 +72,16 @@ async function execThread(path: string) {
   const summaryPath = `${os.homedir()}/summaries/${fileName}.txt`;
   await writeFileAsync(summaryPath, tidy);
   await execAsync(`rm "${path}"`)
-  chalk.blue(`Summary ${fileName} complete`)
+  console.log(chalk.blue(`Summary ${fileName} complete`))
   pm.stop(path)
   pm.cleanUp(path)
 }
 
 async function cleanUpFailedThread(path: string, e: Error) {
-  chalk.yellow('Summary Thread Failed')
+  console.log(chalk.yellow('Summary Thread Failed'))
   console.log(e)
   if (pm.getAmountOfTries(path) > 3) {
-    chalk.red('Summary Thread Failed 3 times, deleting file')
+    console.log(chalk.red('Summary Thread Failed 3 times, deleting file'))
     await execAsync(`rm "${path}"`);
     pm.cleanUp(path);
     return;
@@ -101,34 +105,38 @@ function tidySummary(summary: string, ids: ReturnType<typeof getFileInfo>) {
 }
 
 async function getSummary(transcription: string) {
-  chalk.blue('Starting to get summary')
-  let chunks = await textSplitter.splitText(transcription);
+  console.log(chalk.blue('Starting to get summary'))
+  let chunks = await createTextSplitter(1000).splitText(transcription);
   let summaryChunks = await getSubSummaries(chunks);
   let summaryText = summaryChunks.join('\n\n');
 
   if (summaryText.length > 12_000) {
-    chalk.yellow('Summary too long, splitting into chunks 1')
-    chunks = await textSplitter.splitText(summaryText);
+    console.log(chalk.yellow('Summary too long, splitting into chunks 1'));
+    chunks = await createTextSplitter(2000).splitText(summaryText);
     summaryChunks = await getSubSummaries(chunks);
   }
 
   if (summaryText.length > 12_000) {
-    chalk.yellow('Summary too long, splitting into chunks 2')
-    chunks = await textSplitter.splitText(summaryText);
+    console.log(chalk.yellow('Summary too long, splitting into chunks 2'));
+    chunks = await createTextSplitter(3000).splitText(summaryText);
     summaryChunks = await getSubSummaries(chunks);
   }
 
   if (summaryText.length > 12_000) {
-    chalk.yellow('Summary too long, splitting into chunks 3')
-    chunks = await textSplitter.splitText(summaryText);
+    console.log(chalk.yellow('Summary too long, splitting into chunks 3'))
+    chunks = await createTextSplitter(4000).splitText(summaryText);
     summaryChunks = await getSubSummaries(chunks);
   }
 
   if (summaryText.length > 12_000) {
-    chalk.yellow('Summary too long, splitting into chunks 4')
-    chunks = await textSplitter.splitText(summaryText);
+    console.log(chalk.yellow('Summary too long, splitting into chunks 4'));
+    chunks = await createTextSplitter(5000).splitText(summaryText);
     summaryChunks = await getSubSummaries(chunks);
   }
+
+  if(summaryText.length > 14_000) {
+    throw new Error('Call too long')
+  } 
 
   let output = await llm.call(
     `This is a list of summaries of one phone call between a guest service agent and a guest of a vacation sales company.Please do not include any names in your summaries, refer to the guest as the guest and the agent as the team-member. The list of summaries is separated by \n\n please take all of these summaries and turn it into a single summary where all of the relevent points, misunderstandings or issues are stated. make the output a bulleted list of points: ${summaryText}`
@@ -141,7 +149,7 @@ async function getSubSummaries(chunks: Array<string>) {
   return await Promise.all(
     chunks.map(async (chunk) => {
       return await llm.call(
-        `This is a chunk of a guest service call for monster reservations group. Your job is to find the important points in this chunk so that a bot can summarize them later. Please include any relevent points, misunderstandings, or issues within the chunk. Please do not include any names in your summaries, refer to the guest as the guest and the agent as the team-member. Make the output a bulleted list of points Chunk: ${chunk}`
+        `This is a chunk of a guest service call for monster reservations group. Your job is to find the important points in this chunk so that a bot can summarize them later. Please keep the summary short and concice. Please include any relevent points, misunderstandings, or issues within the chunk. Please do not include any names in your summaries, refer to the guest as the guest and the agent as the team-member. Make the output a bulleted list of points Chunk: ${chunk}`
       );
     })
   );
@@ -154,7 +162,7 @@ function maskCreditCard(text: string) {
   let maskedText = text.replace(potentialCardNumber, function (match: string) {
     // Remove non-digit characters
     let justNumbers = match.replace(/\D/g, '');
-    chalk.yellow(`found potential cc match ${match}`);
+    console.log(chalk.yellow(`found potential cc match ${match}`));
 
     // Validate length and Luhn algorithm
     if (
@@ -162,10 +170,10 @@ function maskCreditCard(text: string) {
       justNumbers.length <= 19 &&
       luhnCheck(justNumbers)
     ) {
-      chalk.red(`${match} positive for luhn replacing with XXXX-XXXX-XXXX-XXXX`);
+      console.log(chalk.red(`${match} positive for luhn replacing with XXXX-XXXX-XXXX-XXXX`));
       return 'XXXX-XXXX-XXXX-XXXX';
     } else {
-      chalk.green(`${match} negative for luhn passing value through`);
+      console.log(chalk.green(`${match} negative for luhn passing value through`));
       return match;
     }
   });

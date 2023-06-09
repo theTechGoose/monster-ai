@@ -1,9 +1,8 @@
 export function getFileInfo(path: string) {
-  console.log({ path });
   const fileName = path.split('/').pop();
-  console.log({ fileName });
   const [guestPhone, repName, fullRep, callType, _rids] = fileName.split('..');
-  const rids = _rids.split('-').map((n) => Number(n));
+  const mRids = _rids.replace(/[^0-9\-]/g,'')
+  const rids = mRids.split('-').map((n) => Number(n));
   return {
     guestPhone,
     repName,

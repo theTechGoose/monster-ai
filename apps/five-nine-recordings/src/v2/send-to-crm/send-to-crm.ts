@@ -47,7 +47,7 @@ async function newThread() {
 
 async function execThread(path: string) {
   const fileName = path.split('/').pop();
-  chalk.blue(`Sending ${fileName} to CRM`);
+  console.log(chalk.blue(`Sending ${fileName} to CRM`));
   const info = getFileInfo(path);
   const content = await readFileAsync(path);
   const { callType, rids } = info;
@@ -55,15 +55,15 @@ async function execThread(path: string) {
   await execAsync(`rm ${path}`);
   pm.stop(path);
   pm.cleanUp(path);
-  chalk.green(`Sent to records: ${info.rids.join(',')} `);
+  console.log(chalk.green(`Sent to records: ${info.rids.join(',')} `));
   console.log(content.toString());
 }
 
 async function cleanUpFailedThread(path: string, e: Error) {
-  chalk.yellow('Failed to send to CRM');
+  console.log(chalk.yellow('Failed to send to CRM'));
   console.log(e);
   if (pm.getAmountOfTries(path) > 3) {
-    chalk.red('Failed to send to CRM 3 times, deleting file');
+    console.log(chalk.red('Failed to send to CRM 3 times, deleting file'));
     await execAsync(`rm ${path}`);
     pm.stop(path);
     pm.cleanUp(path);

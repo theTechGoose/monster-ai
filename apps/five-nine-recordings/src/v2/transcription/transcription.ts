@@ -8,7 +8,7 @@ import chalk from 'chalk';
 
 const readdirAsync = promisify(readdir);
 const execAsync = promisify(exec);
-const pm = new ProcessManager(2);
+const pm = new ProcessManager(4);
 
 let transcriptionQueue = [];
 
@@ -42,27 +42,27 @@ async function newThread() {
 
 async function execThread(path: string) {
   const fileName = path.split('/').pop();
-  chalk.blue(`transcribing ${fileName}`);
+  console.log(chalk.blue(`transcribing ${fileName}`));
   const transcriptionPath = `${os.homedir()}/transcriptions`;
   const command = `whisper "${path}" --output_dir "${transcriptionPath}" --model tiny --output_format txt --language en`;
   await execAsync(command);
   execAsync(`rm "${path}"`);
-  chalk.blue(`transcribed ${fileName}`);
+  console.log(chalk.blue(`transcribed ${fileName}`))
   pm.stop(path);
   pm.cleanUp(path);
 }
 
 async function cleanUpFailedThread(path: string, e: Error) {
-  chalk.yellow('Transcription Thread Failed');
+  console.log(chalk.yellow('Transcription Thread Failed'));
   console.log(e);
   if (e.message.includes('Invalid data found when processing input')) {
-    chalk.red('Deleting file as error is unrecoverable');
+    console.log(chalk.red('Deleting file as error is unrecoverable'));
     execAsync(`rm "${path}"`);
     pm.cleanUp(path);
     return;
   }
   if (pm.getAmountOfTries(path) > 3) {
-    chalk.red('Failed to transcribe file after 3 tries, deleting file');
+    console.log(chalk.red('Failed to transcribe file after 3 tries, deleting file'));
     execAsync(`rm "${path}"`);
     pm.cleanUp(path);
     return;

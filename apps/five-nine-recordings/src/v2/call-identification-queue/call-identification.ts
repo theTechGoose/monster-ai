@@ -17,7 +17,7 @@ const readdirAsync = promisify(readdir);
 
 let identificationQueue = [];
 
-const pm = new ProcessManager(5);
+const pm = new ProcessManager(10);
 
 export function startCallIdentification() {
   listenFiles();
@@ -31,7 +31,6 @@ function listenFiles() {
     files = files.map((f) => `/home/raphael/recordings/${f}`);
     let notInQueue = files.filter((f) => !identificationQueue.includes(f));
     notInQueue = notInQueue.filter((f) => !pm.getProcesses().includes(f));
-
     identificationQueue = [...identificationQueue, ...notInQueue];
   }, UPDATE_INTERVAL);
 }
@@ -50,12 +49,12 @@ async function newThread() {
 
 async function execThread(path: string) {
   const rawFileName = path.split('/').pop();
-  chalk.blue(`Identifying ${rawFileName} in CRM`);
+  console.log(chalk.blue(`Identifying ${rawFileName} in CRM`));
   const callInfo = identifyCall(path);
   const foundResult = await findInCrm(callInfo.guestPhone, ENV);
   if (!foundResult.ids) {
-    chalk.red(`${callInfo.guestPhone} not found in CRM deleting file`);
-    execAsync(`rm "${path}"`);
+    console.log(chalk.red(`${callInfo.guestPhone} not found in CRM deleting file`));
+    await execAsync(`rm "${path}"`);
     pm.stop(path);
     pm.cleanUp(path);
     return;
@@ -63,10 +62,18 @@ async function execThread(path: string) {
   const fileName = `${callInfo.guestPhone}..${callInfo.repName}..${
     callInfo.fullRep
   }..${callInfo.type}..${foundResult.ids.join('-')}`;
-  execAsync(`mv "${path}" "${os.homedir()}/toTranscribe/${fileName}.wav"`);
-  chalk.blue(`Successfully identified ${rawFileName} as ${fileName}`);
+  await sleep(60_000)
+  await execAsync(`mv "${path}" "${os.homedir()}/toTranscribe/${fileName}.wav"`);
+  console.log(chalk.blue(`Successfully identified ${rawFileName} as ${fileName}`));
   pm.stop(path);
   pm.cleanUp(path);
+}
+
+
+async function sleep(ms: number) {
+  return new Promise(r => {
+    setTimeout(r, ms)
+  })
 }
 
 async function findInCrm(phone: string, target: 'test' | 'prod') {
@@ -86,11 +93,12 @@ async function findInCrm(phone: string, target: 'test' | 'prod') {
 }
 
 async function cleanUpFailedThread(id: string, error: Error) {
-  console.log('failed to run thread for call identification');
+  console.log(chalk.yellow('failed to run thread for call identification'));
   console.log(error);
   pm.stop(id);
   const tries = pm.getAmountOfTries(id);
   if (tries > MAX_RETRIES) {
+    console.log(chalk.red('Failed to identify call 3 times, deleting file'))
     await execAsync(`rm -rf "${id}"`);
     pm.cleanUp(id);
     return;
@@ -98,7 +106,6 @@ async function cleanUpFailedThread(id: string, error: Error) {
 }
 
 function identifyCall(path: string) {
-  console.log('identifying call');
   const lastEl = path.split('/').pop();
   const [phone1, phone2] = lastEl
     .split('by')[0]
