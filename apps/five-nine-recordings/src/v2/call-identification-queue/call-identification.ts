@@ -1,51 +1,26 @@
 import os from 'os';
 import { readdir } from 'fs';
 import { promisify } from 'util';
-import {
-  ENV,
-  MAX_RETRIES,
-  UPDATE_INTERVAL,
-  IDENTIFY_RECORDING_UPDATE_INTERVAL,
-} from '../../main';
+import { ENV, MAX_RETRIES } from '../../main';
 import { exec } from 'child_process';
 import axios from 'axios';
 import { ProcessManager } from '../shared/process-manager';
 import chalk from 'chalk';
-
 const execAsync = promisify(exec);
-const readdirAsync = promisify(readdir);
 
-let identificationQueue = [];
+const pm = new ProcessManager({
+  updateInterval: 1000,
+  process: 'recordings',
+  execInterval: 500,
+  maxThreads: 1,
+});
 
-const pm = new ProcessManager(10);
-
-export function startCallIdentification() {
-  listenFiles();
-  setInterval(newThread, IDENTIFY_RECORDING_UPDATE_INTERVAL);
+export function bootStrapRecordings() {
+pm.registerExec(async (path: string, pm: ProcessManager) => { 
+  await execThread(path);
+});
 }
 
-function listenFiles() {
-  setInterval(async () => {
-    const dir = `${os.homedir()}/recordings`;
-    let files = await readdirAsync(dir);
-    files = files.map((f) => `/home/raphael/recordings/${f}`);
-    let notInQueue = files.filter((f) => !identificationQueue.includes(f));
-    notInQueue = notInQueue.filter((f) => !pm.getProcesses().includes(f));
-    identificationQueue = [...identificationQueue, ...notInQueue];
-  }, UPDATE_INTERVAL);
-}
-
-async function newThread() {
-  if (pm.isMaxed()) return;
-  const path = identificationQueue.pop();
-  if (!path) return;
-  const id = pm.start(path);
-  try {
-    await execThread(id);
-  } catch (e) {
-    await cleanUpFailedThread(id, e);
-  }
-}
 
 async function execThread(path: string) {
   const rawFileName = path.split('/').pop();
@@ -53,7 +28,9 @@ async function execThread(path: string) {
   const callInfo = identifyCall(path);
   const foundResult = await findInCrm(callInfo.guestPhone, ENV);
   if (!foundResult.ids) {
-    console.log(chalk.red(`${callInfo.guestPhone} not found in CRM deleting file`));
+    console.log(
+      chalk.red(`${callInfo.guestPhone} not found in CRM deleting file`)
+    );
     await execAsync(`rm "${path}"`);
     pm.stop(path);
     pm.cleanUp(path);
@@ -62,18 +39,21 @@ async function execThread(path: string) {
   const fileName = `${callInfo.guestPhone}..${callInfo.repName}..${
     callInfo.fullRep
   }..${callInfo.type}..${foundResult.ids.join('-')}`;
-  await sleep(60_000)
-  await execAsync(`mv "${path}" "${os.homedir()}/toTranscribe/${fileName}.wav"`);
-  console.log(chalk.blue(`Successfully identified ${rawFileName} as ${fileName}`));
+  await sleep(60_000);
+  await execAsync(
+    `mv "${path}" "${os.homedir()}/toTranscribe/${fileName}.wav"`
+  );
+  console.log(
+    chalk.blue(`Successfully identified ${rawFileName} as ${fileName}`)
+  );
   pm.stop(path);
   pm.cleanUp(path);
 }
 
-
 async function sleep(ms: number) {
-  return new Promise(r => {
-    setTimeout(r, ms)
-  })
+  return new Promise((r) => {
+    setTimeout(r, ms);
+  });
 }
 
 async function findInCrm(phone: string, target: 'test' | 'prod') {
@@ -98,7 +78,7 @@ async function cleanUpFailedThread(id: string, error: Error) {
   pm.stop(id);
   const tries = pm.getAmountOfTries(id);
   if (tries > MAX_RETRIES) {
-    console.log(chalk.red('Failed to identify call 3 times, deleting file'))
+    console.log(chalk.red('Failed to identify call 3 times, deleting file'));
     await execAsync(`rm -rf "${id}"`);
     pm.cleanUp(id);
     return;
