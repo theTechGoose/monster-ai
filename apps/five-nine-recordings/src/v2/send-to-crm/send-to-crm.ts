@@ -8,12 +8,16 @@ import { exec } from 'child_process';
 import { getFileInfo } from '../shared/get-file-info';
 import chalk from 'chalk';
 import axios from 'axios';
+import {formatDistance} from 'date-fns'
+import { getMetaData, clearMetaData } from '../shared/data-manager';
+import { getTimeInDiff } from './get-time-diff';
+import { getDurationFromSeconds, timer } from '../shared/timer';
 
 const readFileAsync = promises.readFile;
 const readdirAsync = promisify(readdir);
 const execAsync = promisify(exec);
 
-const pm = new ProcessManager(2);
+const pm = new ProcessManager(4);
 
 let sendQueue = [];
 
@@ -30,6 +34,7 @@ function listenFiles() {
     let notInQueue = files.filter((f) => !sendQueue.includes(f));
     notInQueue = notInQueue.filter((f) => !pm.getProcesses().includes(f));
     sendQueue = [...sendQueue, ...notInQueue];
+     await clearMetaData()
   }, UPDATE_INTERVAL);
 }
 
@@ -46,17 +51,32 @@ async function newThread() {
 }
 
 async function execThread(path: string) {
+  timer(path)
   const fileName = path.split('/').pop();
   console.log(chalk.blue(`Sending ${fileName} to CRM`));
-  const info = getFileInfo(path);
+  const info = await getMetaData(path)
   const content = await readFileAsync(path);
-  const { callType, rids } = info;
-  await sendToCrm(rids, callType, content.toString(), ENV);
+  const { type, foundCallIds, endDate } = info;
+  console.log({endDate})
+  const stringifiedDate = endDate.toISOString()
+  await sendToCrm(foundCallIds, type, content.toString(), stringifiedDate, ENV);
   await execAsync(`rm ${path}`);
   pm.stop(path);
   pm.cleanUp(path);
-  console.log(chalk.green(`Sent to records: ${info.rids.join(',')} `));
+  console.log(chalk.green(`Sent to records: ${foundCallIds.join(',')} `));
   console.log(content.toString());
+  const metaData = await getMetaData(path)
+  const timeInSystem = getTimeInDiff(metaData.systemIntakeDate)
+  const timeFromEndToTranscribe = getTimeInDiff(metaData.endDate)
+  metaData.timeInSystem = timeInSystem
+  metaData.timeInSystem = getDurationFromSeconds(metaData.timeInSystem)
+  metaData.timeFromEndToTranscribe= timeFromEndToTranscribe
+  metaData.timeFromEndToTranscribe = getDurationFromSeconds(metaData.timeFromEndToTranscribe)
+  const times = timer(path)
+  metaData.times.sendToCrm = times
+  console.log('XXXXXXXXXXXXX')
+  console.log({metaData})
+  console.log('XXXXXXXXXXXXX')
 }
 
 async function cleanUpFailedThread(path: string, e: Error) {
@@ -76,6 +96,7 @@ async function sendToCrm(
   ids: Array<number>,
   type: string,
   transcription: string,
+  endDate: string,
   target: 'test' | 'prod'
 ) {
   const testUrl = 'https://rofer-server.ngrok.io/monster-mono-repo/us-central1';
@@ -83,16 +104,16 @@ async function sendToCrm(
     'https://us-central1-monster-mono-repo-beta.cloudfunctions.net';
   const url = target === 'test' ? testUrl : prodUrl;
   const final = `${url}/api/utils/save-call-transcription`;
-  const date = new Date().toISOString();
   const payload = {
     ids,
     type,
     transcription,
-    date,
+    date: endDate,
   };
   const headers = {
     Authorization: 'Basic cmFmYXNCYWNrZW5kOnBpenphVGltZTIwMDAh',
   };
+  console.log({payload})
   const request = await axios.post(final, payload, { headers });
   return request.data;
 }

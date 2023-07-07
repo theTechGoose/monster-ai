@@ -16,12 +16,19 @@ export class ProcessManager {
     return currentThreads >= this.maxThreads;
   }
 
+  getLog(id: string) {
+    return this.processes[id]
+  }
+
   getAmountOfTries(id: string) {
     return this.processes[id].count;
   }
 
   getProcesses() {
-    return Object.keys(this.processes)
+    const output = Object.entries(this.processes).filter((p: any) => {
+      return p[1].isLive
+    }).map(p => p[0])
+    return output
   }
 
   start(id: string) {
@@ -30,6 +37,7 @@ export class ProcessManager {
     this.processes[id].count++;
     return id;
   }
+  
 
   stop(id: string) {
     this.processes[id].isLive = false;

@@ -5,10 +5,21 @@ import { UPDATE_INTERVAL } from '../../main';
 import { ProcessManager } from '../shared/process-manager';
 import { exec } from 'child_process';
 import chalk from 'chalk';
+import {timeTracker} from './stats'
+import { timer } from '../shared/timer';
+import { getMetaData, setMetaData } from '../shared/data-manager';
+import {getAudioDurationInSeconds} from 'get-audio-duration'
+
+const MODELS = {
+  tiny: 'tiny',
+  base: 'base',
+  medium: 'medium',
+  large: 'large-v2'
+}
 
 const readdirAsync = promisify(readdir);
 const execAsync = promisify(exec);
-const pm = new ProcessManager(4);
+const pm = new ProcessManager(3);
 
 let transcriptionQueue = [];
 
@@ -41,26 +52,44 @@ async function newThread() {
 }
 
 async function execThread(path: string) {
+  await timeTracker(path)
+  timer(path)
   const fileName = path.split('/').pop();
   console.log(chalk.blue(`transcribing ${fileName}`));
   const transcriptionPath = `${os.homedir()}/transcriptions`;
-  const command = `whisper "${path}" --output_dir "${transcriptionPath}" --model tiny --output_format txt --language en`;
+  const model = MODELS.large
+  const threads = 5 
+  const command = `PATH=/home/raphael/whisper_edit/bin:$PATH && whisperx "${path}" --output_dir "${transcriptionPath}" --model ${model} --output_format srt --language en --threads ${threads} --hf_token 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 --diarize --min_speakers 1 --max_speakers 2`;
   await execAsync(command);
-  execAsync(`rm "${path}"`);
+  console.log('************************************')
   console.log(chalk.blue(`transcribed ${fileName}`))
+  const stats = await timeTracker(path)
+  const metaData = await getMetaData(path)
+  const duration = await getAudioDurationInSeconds(path)
+  metaData.recordingDuration = duration
+  console.log('************************************')
+  await execAsync(`rm "${path}"`);
   pm.stop(path);
   pm.cleanUp(path);
+  const times = timer(path)
+  metaData.times.transcribe = times
+  metaData.model = model
+  console.log({metaData})
+  await setMetaData(metaData)
 }
 
 async function cleanUpFailedThread(path: string, e: Error) {
-  console.log(chalk.yellow('Transcription Thread Failed'));
-  console.log(e);
+  const fileName = path.split('/').pop()
+  console.log(chalk.yellow(`Transcription Thread Failed ${fileName}`));
+  console.log(e)
+  
   if (e.message.includes('Invalid data found when processing input')) {
     console.log(chalk.red('Deleting file as error is unrecoverable'));
     execAsync(`rm "${path}"`);
     pm.cleanUp(path);
     return;
   }
+  
   if (pm.getAmountOfTries(path) > 3) {
     console.log(chalk.red('Failed to transcribe file after 3 tries, deleting file'));
     execAsync(`rm "${path}"`);
