@@ -10,7 +10,7 @@ import { OpenAI } from 'langchain/llms/openai';
 import { getFileInfo } from '../shared/get-file-info';
 import chalk from "chalk"
 import {analyzeText} from '../shared/deduper'
-import { formatDistance } from 'date-fns';
+import { addSeconds, formatDistance } from 'date-fns';
 import { getMetaData, setMetaData } from '../shared/data-manager';
 import { timer } from '../shared/timer';
 import {detectVoicemail} from './voicemail-detector'
@@ -47,6 +47,11 @@ const llm = new OpenAI({
   openAIApiKey: process.env.OPEN_AI_KEY,
 });
 
+const gpt4 = new OpenAI({
+  modelName: 'gpt-4',
+  openAIApiKey: process.env.OPEN_AI_KEY,
+});
+
 function listenFiles() {
   setInterval(async () => {
     const dir = `${os.homedir()}/transcriptions`;
@@ -79,9 +84,9 @@ async function execThread(path: string) {
   content = await condenseSpeech(content)
   const maskedContent = maskCreditCard(content);
   const info = await getMetaData(path) 
-  const summaryOutput = await getSummary(maskedContent, info.callType, path);
+  const summaryOutput = await getSummary(maskedContent, info.callType, path, info.recordingDuration);
   const summary = summaryOutput.output
-  const tidy = tidySummary(summary, info);
+  const tidy = tidySummary(summary, info, summaryOutput.smolSummary);
   const summaryPath = `${os.homedir()}/summaries/${fileName}.txt`;
   await writeFileAsync(summaryPath, tidy);
   await execAsync(`rm "${path}"`)
@@ -94,6 +99,7 @@ async function execThread(path: string) {
   metaData.summary = {}
   metaData.summary.final = summaryOutput.output
   metaData.summary.sub = summaryOutput.summaryText
+  metaData.summary.smolSummary = summaryOutput.smolSummary
   await setMetaData(metaData)
 }
 
@@ -109,8 +115,18 @@ async function cleanUpFailedThread(path: string, e: Error) {
   pm.stop(path);
 }
 
-function tidySummary(summary: string, ids: any) {
-  const {repName, endDate, startDate, callId} = ids
+function tidySummary(summary: string, ids: any, smolSummary: string) {
+  const {repName, endDate, startDate, callId, recordingDuration} = ids
+  const roundDuration = Math.round(recordingDuration)
+  const now = new Date()
+  const later = addSeconds(now, roundDuration)
+  const prettyDuration = formatDistance(now, later)
+  // let hours = Math.floor(recordingDuration / 3600).toString()
+  // hours = hours.length < 2 ? `0${hours}` : hours
+  // let minutes = Math.floor((recordingDuration % 3600) / 60).toString()
+  // minutes = minutes.length < 2 ? `0${minutes}` : minutes
+  // let seconds = Math.floor((recordingDuration % 60)).toString()
+  // seconds = seconds.length < 2 ? `0${seconds}` : seconds
   const startMilis = startDate.getTime();
   const endMilis = endDate.getTime();
   const milidiff = endMilis - startMilis
@@ -120,19 +136,32 @@ function tidySummary(summary: string, ids: any) {
     duration = 'unknown'
   }
   let output = summary
-    .split('agent')
+  
+  output = `${fomattedCallId} was a ${ids.type} call on ${ids.guestPhone} by ${ids.fullRep} it lasted ${prettyDuration}:  \n\n ${output} `;
+  if(smolSummary) output = output + `\n\n === Smol Summary Start === \n\n ${smolSummary} \n\n === Smol Sumamry End ===`
+  
+  output = output.split('agent')
     .join(repName)
     .split('team-member')
     .join(repName)
     .split('Agent')
     .join(repName)
     .split('Team-member')
-    .join(repName);
-  output = `${fomattedCallId} was a ${ids.type} call on ${ids.guestPhone} by ${ids.fullRep} it lasted ${duration}: \n\n ${output}`;
+    .join(repName)
+    .split('employee')
+    .join('team-member');
+  
   return output;
 }
 
-async function getSummary(_transcription: string, callType: string, path: string) {
+async function getSummary(_transcription: string, callType: string, path: string, duration: number) {
+  let sentenceTarget = Math.round(duration / 60)
+  sentenceTarget = Math.round(sentenceTarget / 2)
+  sentenceTarget = sentenceTarget < 1 ? 1 : sentenceTarget 
+  sentenceTarget = sentenceTarget > 35 ? 35 : sentenceTarget
+  const wordTarget = sentenceTarget * 20
+  const characterTarget = wordTarget * 5
+  console.log({sentenceTarget, wordTarget, characterTarget, duration})
   const summaryPreprocess = analyzeText(_transcription)
   const {dedupedText} = summaryPreprocess
   const transcription = dedupedText
@@ -155,7 +184,7 @@ if there is none of this available please provide any information you can on the
 
 Please take into account these key areas while identifying the most critical information. Here's the transcription for your reference: ${transcription.split('team-member: ').join('<speakerTurn>').split('guest: ').join('<speakerTurn>')}
 
-this is an example of bad output, do not do this: Although the conversation didn't explicitly mention chargebacks, bank calls, refunds, bad guest experiences, misunderstandings, or the team member going the extra mile, these elements were not present in the bullet points provided.
+this is an example of bad output, do not produce output like this or that contains the following please: Although the conversation didn't explicitly mention chargebacks, bank calls, refunds, bad guest experiences, misunderstandings, or the team member going the extra mile, these elements were not present in the bullet points provided.
 
 
 
@@ -186,23 +215,21 @@ this is an example of bad output, do not do this: Although the conversation didn
 
   let output = await llm.call(
     `
-I am providing a series of bullet points that summarize a ${callType} call between a guest and a team member. These bullet points have been derived from segmented parts of the original conversation. Please stick strictly to the provided transcription and avoid any interence, extrapolation, or cration of information that isn't explicitly stated in the text. Be specific and provide detail. I would like you to compile these bullet points and provide an overall summary of the conversation. Remember not to infer or make up any information that isn't present or explicitly stated in the bullet points.
+I require a succinct summary of a ${callType} call held between a guest and a team member at Monster Reservations Group. The summary should be strictly based on the provided transcriptions, with no additional inferences, assumptions, or fabricated information. Aim to generate a ${sentenceTarget}-sentence summary that does not exceed ${wordTarget} words or ${characterTarget} characters.
 
-The bullet points are:
+Below, you will find the necessary summaries for reference:
 
---- start bullet points ---
+--- Start Summaries ---
 
 ${summaryText}
 
---- end bullet points ---
+--- End Summaries ---
 
-Based on these points, could you provide a concise and comprehensive summary of the conversation. If there are no points just say there is nothing to summerize. do not make anything up.
+Using these summaries as your source, craft a concise, comprehensive, and detailed account of the conversation. 
 
-And remember to refer to the customer as 'the guest' and our staff as 'the team member'. Please be specific and provide as much detail as the summary will allow.
+For consistency, refer to the customer as 'the guest' and the company representative as 'the team member'. Remember, accuracy is key; the brand 'Booksy' should be correctly referred to as 'Booksi'.
 
-if specific details do not exist just omit them, this is another example of bad output: although specific details regarding chargebacks, bank calls, refunds, bad guest experiences, misunderstandings, or the team member going the extra mile were not mentioned, these elements were also not present in the provided bullet points
-
-
+Do not include any information that has to do with credit card information
 `
   );
 
@@ -213,9 +240,20 @@ in the summary ${output}, given these points ${summaryText} please summarize thi
 `)
     
   }
+  let smolSummary = null
 
-  return {output, summaryText};
-  
+  if(output.length > 500) {
+   smolSummary = await llm.call(`Please create a 75 word or less summary of the following: 
+
+=== start text ===
+${output}
+=== end text ===
+
+please ensure that the output is less than 3 sentences. Please make sure that the output is less than 300 characters.
+
+`)
+  }
+  return {output, summaryText, smolSummary};
 }
 
 async function getSubSummaries(chunks: Array<string>, callType: string) {
@@ -223,20 +261,17 @@ async function getSubSummaries(chunks: Array<string>, callType: string) {
     chunks.map(async (chunk) => {
       return await llm.call(
         `
-I am providing chunk of a transcription of a ${callType}.  Please stick strictly to the provided transcription and avoid any interence, extrapolation, or cration of information that isn't explicitly stated in the text. I would like you to analyze this transcription and provide at most five bullet points of important points derived from the content. Be specific and provide detail. Please remember not to infer or make up any information that isn't present or explicitly stated in the transcription.
+I am providing chunk of a transcription of a ${callType}.  Please stick strictly to the provided transcription and avoid any interence, extrapolation, or cration of information that isn't explicitly stated in the text. I would like you to summarize this transcription into at most 5 sentences. Be specific and provide detail. Please remember not to infer or make up any information that isn't present or explicitly stated in the transcription.
 
-Emphasize and prioritize any details related to:
+Please refer to the customer as 'the guest' and our staff as 'the team member' in your summary. Here's the transcription for your reference: 
 
-    Chargebacks
-    The mention of calling the bank
-    Refunds
-    Bad guest experiences
-    Misunderstandings
-    The team member going the extra mile
+=== transcription start ===
 
-Please refer to the customer as 'the guest' and our staff as 'the team member' in your summary. Here's the transcription for your reference: ${chunk}
+${chunk}
 
-if specific details do not exist just omit them, this is another example of bad output: although specific details regarding chargebacks, bank calls, refunds, bad guest experiences, misunderstandings, or the team member going the extra mile were not mentioned, these elements were also not present in the provided bullet points
+=== transcription end ===
+
+do not include anything that has to do with credit card information
 
 "
 
