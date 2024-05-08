@@ -100,6 +100,7 @@ async function execThread(path: string) {
   const metaData = await getMetaData(path);
   metaData.guestInfoSummary = summaryOutput.guestInfoSummary
   metaData.guestJson = summaryOutput.guestJson
+  metaData.guestInfoChunks = summaryOutput.guestInfoChunks;
   metaData.times.summarize = times;
   metaData.summary = {};
   metaData.summary.final = summaryOutput.output;
@@ -285,9 +286,10 @@ please ensure that the output is less than 3 sentences. Please make sure that th
   const infoOutput = await getGuestInfoSummary(chunks, callType);
   const guestInfoSummary = infoOutput?.guestSummary;
   const guestJson = JSON.stringify(infoOutput?.guestJson, null, 2);
+  const guestInfoChunks = infoOutput?.jsonChunks;
   console.log({guestSummary2: guestInfoSummary})
 
-  return { output, summaryText, smolSummary, guestInfoSummary, guestJson  };
+  return { output, summaryText, smolSummary, guestInfoSummary, guestJson, guestInfoChunks  };
 }
 
 async function getSubSummaries(chunks: Array<string>, callType: string) {
@@ -340,9 +342,7 @@ async function getGuestInfoSummary(chunks: Array<string>, callType: string) {
           baseValue.data.push(valueToAdd)
           return acc2
         }, {});
-        console.log({newPayload, payload})
         return {...payload, ...newPayload}
-
       } catch {
         console.log('error parsing json for guest info');
         return acc;
@@ -359,7 +359,7 @@ async function getGuestInfoSummary(chunks: Array<string>, callType: string) {
     );
     console.log({guestSummary1: guestSummary})
 
-    return {guestJson, guestSummary}
+    return {guestJson, jsonChunks, guestSummary}
   } catch {
     console.log('error getting guest info summary');
     return {}
