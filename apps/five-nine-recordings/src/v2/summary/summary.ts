@@ -284,7 +284,8 @@ please ensure that the output is less than 3 sentences. Please make sure that th
 
   const infoOutput = await getGuestInfoSummary(chunks, callType);
   const guestInfoSummary = infoOutput?.guestSummary;
-  const guestJson = infoOutput?.guestJson;
+  const guestJson = JSON.stringify(infoOutput?.guestJson, null, 2);
+  console.log({guestSummary2: guestInfoSummary})
 
   return { output, summaryText, smolSummary, guestInfoSummary, guestJson  };
 }
@@ -317,6 +318,7 @@ do not include anything that has to do with credit card information
 async function getGuestInfoSummary(chunks: Array<string>, callType: string) {
   try {
     let jsonChunks = await getSubInfo(chunks, callType);
+
     const guestJson = jsonChunks.reduce((acc, val) => {
       try {
         const payload = JSON.parse(val);
@@ -332,6 +334,8 @@ async function getGuestInfoSummary(chunks: Array<string>, callType: string) {
         guestJson
       )}. The output should be at most 5 sentences and should be detailed and specific. Do not include any information that has to do with credit card information.`
     );
+    console.log({guestSummary1: guestSummary})
+
     return {guestJson, guestSummary}
   } catch {
     console.log('error getting guest info summary');
@@ -353,10 +357,6 @@ async function getSubInfo(chunks: Array<string>, callType: string) {
         }
         return `line ${i}: ${c}`
       })
-
-      console.log('=================Incoming Chunk=================')
-      console.log(chunk)
-      console.log('=================End Incoming Chunk=================')
 
       return await gpt4.call(
         `
