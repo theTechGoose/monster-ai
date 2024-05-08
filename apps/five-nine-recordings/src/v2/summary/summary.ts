@@ -99,6 +99,7 @@ async function execThread(path: string) {
   const times = timer(path);
   const metaData = await getMetaData(path);
   metaData.guestInfoSummary = summaryOutput.guestInfoSummary
+  metaData.guestJson = summaryOutput.guestJson
   metaData.times.summarize = times;
   metaData.summary = {};
   metaData.summary.final = summaryOutput.output;
@@ -281,8 +282,11 @@ please ensure that the output is less than 3 sentences. Please make sure that th
 `);
   }
 
-  const guestInfoSummary = await getGuestInfoSummary(chunks, callType);
-  return { output, summaryText, smolSummary, guestInfoSummary };
+  const infoOutput = await getGuestInfoSummary(chunks, callType);
+  const guestInfoSummary = infoOutput?.guestSummary;
+  const guestJson = infoOutput?.guestJson;
+
+  return { output, summaryText, smolSummary, guestInfoSummary, guestJson  };
 }
 
 async function getSubSummaries(chunks: Array<string>, callType: string) {
@@ -328,10 +332,10 @@ async function getGuestInfoSummary(chunks: Array<string>, callType: string) {
         guestJson
       )}. The output should be at most 5 sentences and should be detailed and specific. Do not include any information that has to do with credit card information.`
     );
-    return guestSummary;
+    return {guestJson, guestSummary}
   } catch {
     console.log('error getting guest info summary');
-    return 'no guest information available';
+    return {}
   }
 }
 
@@ -349,6 +353,10 @@ async function getSubInfo(chunks: Array<string>, callType: string) {
         }
         return `line ${i}: ${c}`
       })
+
+      console.log('=================Incoming Chunk=================')
+      console.log(chunk)
+      console.log('=================End Incoming Chunk=================')
 
       return await gpt4.call(
         `
