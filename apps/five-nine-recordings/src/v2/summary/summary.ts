@@ -322,17 +322,37 @@ async function getGuestInfoSummary(chunks: Array<string>, callType: string) {
     const guestJson = jsonChunks.reduce((acc, val) => {
       try {
         const payload = JSON.parse(val);
-        return { ...acc, ...payload };
+        const newPayload = Object.keys(acc).reduce((acc2, key) => {
+          const baseValue = acc[key];
+          const valueToAdd = payload[key];
+          if(!valueToAdd) return acc2
+
+          if(!baseValue) {
+            acc2[key] = valueToAdd
+            return acc2
+          }
+
+          if(baseValue.multi) {
+            acc2[key].data.push(valueToAdd)
+            return acc2
+          }
+
+          baseValue.data.push(valueToAdd)
+          return acc2
+        }, {});
+        return {...payload, ...newPayload}
+
       } catch {
         console.log('error parsing json for guest info');
         return acc;
       }
     }, {});
 
-    const guestSummary = gpt4.call(
+    const guestSummary = await gpt4.call(
       `Please take the following JSON object that describes a guest and turn it into a paragraph that describes the guest in detail. Please include any information that may be useful in a conversation with the guest, such as their interests, preferences, or any other information that may make the conversation more personal. Please remember not to infer or make up any information that isn't present or explicitly stated in the JSON object. Here is the JSON object: ${JSON.stringify(
         guestJson
-      )}. The output should be at most 5 sentences and should be detailed and specific. Do not include any information that has to do with credit card information.`
+      )}. The output should be at most 5 sentences and should be detailed and specific. Do not include any information that has to do with credit card information.
+`
     );
     console.log({guestSummary1: guestSummary})
 
@@ -360,7 +380,27 @@ async function getSubInfo(chunks: Array<string>, callType: string) {
 
       return await gpt4.call(
         `
-I am providing chunk of a transcription of a ${callType} that is only the guest side of the conversation.  Please stick strictly to the provided transcription and avoid any interence, extrapolation, or cration of information that isn't explicitly stated in the text. I would like you extract all information about the guest into a json object. Include any destinations talked about, guest preferences, interests, comments on family such as how many people in their family. Anything that may be of use later in speaking to that person and may make the conversation more personable. Be specific and provide detail. Please remember not to infer or make up any information that isn't present or explicitly stated in the transcription.
+I am providing chunk of a transcription of a ${callType} that is only the guest side of the conversation.  Please stick strictly to the provided transcription and avoid any interence, extrapolation, or cration of information that isn't explicitly stated in the text. I would like you extract all information about the guest into a json object. Include any destinations talked about, guest preferences, interests, comments on family such as how many people in their family. Anything that may be of use later in speaking to that person and may make the conversation more personable. Be specific and provide detail. Please remember not to infer or make up any information that isn't present or explicitly stated in the transcription, here is an example JSON object with the exact keys I am looking for, use this template to model your output:
+{
+  "names": {
+    "speaker": "John Doe",
+    "spouse": "Jane Doe",
+    "kids": ["Alice Doe", "Bob Doe"]
+  },
+  "familyNotes": "Two adults, two children aged 8 and 10",
+  "travelGroup": "Family",
+  "interests": ["beach holidays", "theme parks", "museums"],
+  "destinations": ["Florida", "California", "France"],
+  "travelDates": ["2024-07-01", "2024-07-15"],
+  "eventNotes": {
+    "birthdays": ["2024-07-04 (Alice)", "2024-08-10 (John)"],
+    "holidays": ["Christmas", "New Year's Eve"]
+  },
+  "additionalNotes": "Prefers kid-friendly hotels with pools; interested in educational activities for children"
+}
+
+if information is not available, just put null in the field.
+.
 
 === transcription start ===
 
