@@ -43,17 +43,17 @@ export async function condenseSpeech(input: string): Promise<string> {
   if (currentSpeaker !== '') {
     output.push(`${currentSpeaker}: ${currentLines.join(' ')}`);
   }
-  
+
 
   const outputString = output.join('\n');
   const splitter = createTextSplitter(1000)
   const exerpt = await splitter.splitText(outputString)
   const speakers = await identifySpeakers(exerpt[0])
-  
+
   if(speakers){
-  return outputString.split(speakers.teamMember).join('team-member').split(speakers.guest).join('guest')
+  return outputString.split(speakers.teamMember).join('[team-member] ').split(speakers.guest).join('[guest] ')
   }
-  
+
   return outputString
 }
 
@@ -64,14 +64,14 @@ async function identifySpeakers(exerpt: string, attempt = 0) {
   }
   const prompt = `Given the following conversation, who is most likely the customer service agent? Please respond with either 'SPEAKER_00' or 'SPEAKER_01' ${exerpt}`
   const response = await llm.call(prompt)
-  const isCorrect = response === 'SPEAKER_00' || response === 'SPEAKER_01' 
+  const isCorrect = response === 'SPEAKER_00' || response === 'SPEAKER_01'
   if(!isCorrect) {
     console.log('bad speaker identification response, trying again')
     console.log({response})
   return identifySpeakers(exerpt, attempt + 1)
   }
   const guestSpeaker = response === 'SPEAKER_00' ? 'SPEAKER_01' : 'SPEAKER_00'
-  
+
   return {
     teamMember: response,
     guest: guestSpeaker

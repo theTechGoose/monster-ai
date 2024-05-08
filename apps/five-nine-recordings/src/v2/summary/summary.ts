@@ -335,12 +335,24 @@ async function getGuestInfoSummary(chunks: Array<string>, callType: string) {
   }
 }
 
+
+
 async function getSubInfo(chunks: Array<string>, callType: string) {
   return await Promise.all(
-    chunks.map(async (chunk) => {
+    chunks.map(async (_chunk) => {
+
+      const chunkArr = _chunk.split('[team-member] ')
+      const chunk = chunkArr.map((c, i) => {
+        if (c.includes('[guest] ')) {
+          const output = c.split('[guest] ')[1]
+          return `line ${i}: ${output}`
+        }
+        return `line ${i}: ${c}`
+      })
+
       return await gpt4.call(
         `
-I am providing chunk of a transcription of a ${callType}.  Please stick strictly to the provided transcription and avoid any interence, extrapolation, or cration of information that isn't explicitly stated in the text. I would like you extract all information about the guest into a json object. Include any destinations talked about, guest preferences, interests, comments on family such as how many people in their family. Anything that may be of use later in speaking to that person and may make the conversation more personable. Be specific and provide detail. Please remember not to infer or make up any information that isn't present or explicitly stated in the transcription.
+I am providing chunk of a transcription of a ${callType} that is only the guest side of the conversation.  Please stick strictly to the provided transcription and avoid any interence, extrapolation, or cration of information that isn't explicitly stated in the text. I would like you extract all information about the guest into a json object. Include any destinations talked about, guest preferences, interests, comments on family such as how many people in their family. Anything that may be of use later in speaking to that person and may make the conversation more personable. Be specific and provide detail. Please remember not to infer or make up any information that isn't present or explicitly stated in the transcription.
 
 === transcription start ===
 
