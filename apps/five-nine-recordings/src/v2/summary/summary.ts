@@ -340,6 +340,7 @@ async function getGuestInfoSummary(chunks: Array<string>, callType: string) {
           baseValue.data.push(valueToAdd)
           return acc2
         }, {});
+        console.log({newPayload, payload})
         return {...payload, ...newPayload}
 
       } catch {
@@ -347,6 +348,8 @@ async function getGuestInfoSummary(chunks: Array<string>, callType: string) {
         return acc;
       }
     }, {});
+
+
 
     const guestSummary = await gpt4.call(
       `Please take the following JSON object that describes a guest and turn it into a paragraph that describes the guest in detail. Please include any information that may be useful in a conversation with the guest, such as their interests, preferences, or any other information that may make the conversation more personal. Please remember not to infer or make up any information that isn't present or explicitly stated in the JSON object. Here is the JSON object: ${JSON.stringify(
@@ -380,7 +383,7 @@ async function getSubInfo(chunks: Array<string>, callType: string) {
 
       return await gpt4.call(
         `
-I am providing chunk of a transcription of a ${callType} that is only the guest side of the conversation.  Please stick strictly to the provided transcription and avoid any interence, extrapolation, or cration of information that isn't explicitly stated in the text. I would like you extract all information about the guest into a json object. Include any destinations talked about, guest preferences, interests, comments on family such as how many people in their family. Anything that may be of use later in speaking to that person and may make the conversation more personable. Be specific and provide detail. Please remember not to infer or make up any information that isn't present or explicitly stated in the transcription, here is an example JSON object with the exact keys I am looking for, use this template to model your output:
+I am providing chunk of a transcription of a ${callType} that is only the guest side of the conversation.  Please stick strictly to the provided transcription and avoid any interence, extrapolation, or cration of information that isn't explicitly stated in the text. I would like you extract all information about the guest into a json object. Include any destinations talked about, guest preferences, interests, comments on family such as how many people in their family. Anything that may be of use later in speaking to that person and may make the conversation more personable. Be specific and provide detail. Please remember not to infer or make up any information that isn't present or explicitly stated in the transcription, here is an example JSON object with the exact keys I am looking for if you feel like there is more information worth extracting that could be used to make a connection with the guest use the additional notes field, use this template to model your output:
 {
   "names": {
     "speaker": "John Doe",
