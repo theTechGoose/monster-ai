@@ -178,7 +178,6 @@ async function getSummary(
   sentenceTarget = sentenceTarget > 35 ? 35 : sentenceTarget;
   const wordTarget = sentenceTarget * 20;
   const characterTarget = wordTarget * 5;
-  console.log({ sentenceTarget, wordTarget, characterTarget, duration });
   const summaryPreprocess = analyzeText(_transcription);
   const { dedupedText } = summaryPreprocess;
   const transcription = dedupedText;
@@ -324,22 +323,23 @@ async function getGuestInfoSummary(chunks: Array<string>, callType: string) {
     const guestJson = jsonChunks.reduce((acc, val) => {
       try {
         const payload = JSON.parse(val);
+
         const newPayload = Object.keys(acc).reduce((acc2, key) => {
-          const baseValue = acc[key];
-          const valueToAdd = payload[key];
+          const baseValue = acc[key] ;
+          const valueToAdd = payload[key] === 'null' ? null : payload[key];
           if(!valueToAdd) return acc2
 
           if(!baseValue) {
-            acc2[key] = valueToAdd
+            acc2[key] = {
+              data: [valueToAdd],
+              multi: false
+            }
             return acc2
           }
 
-          if(baseValue.multi) {
-            acc2[key].data.push(valueToAdd)
-            return acc2
-          }
+          acc2[key].multi = true;
+          acc2[key].data.push(valueToAdd);
 
-          baseValue.data.push(valueToAdd)
           return acc2
         }, {});
         return {...payload, ...newPayload}
@@ -347,6 +347,7 @@ async function getGuestInfoSummary(chunks: Array<string>, callType: string) {
         console.log('error parsing json for guest info');
         return acc;
       }
+
     }, {});
 
 
