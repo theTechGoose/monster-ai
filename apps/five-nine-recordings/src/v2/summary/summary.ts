@@ -15,6 +15,7 @@ import { getMetaData, setMetaData } from '../shared/data-manager';
 import { timer } from '../shared/timer';
 import { detectVoicemail } from './voicemail-detector';
 import { condenseSpeech } from './condense-speakers';
+import { joinJson } from './join-json/join-json';
 
 const readFileAsync = promises.readFile;
 const writeFileAsync = promises.writeFile;
@@ -319,39 +320,7 @@ do not include anything that has to do with credit card information
 async function getGuestInfoSummary(chunks: Array<string>, callType: string) {
   try {
     let jsonChunks = await getSubInfo(chunks, callType);
-
-    const guestJson = jsonChunks.reduce((acc, val) => {
-      try {
-        const payload = JSON.parse(val);
-
-        const newPayload = Object.keys(acc).reduce((acc2, key) => {
-          const baseValue = acc[key] ;
-          const valueToAdd = payload[key] === 'null' ? null : payload[key];
-          if(!valueToAdd) return acc2
-
-          if(!baseValue) {
-            acc2[key] = {
-              data: [valueToAdd],
-              multi: false
-            }
-            return acc2
-          }
-
-          acc2[key].multi = true;
-          acc2[key].data.push(valueToAdd);
-
-          return acc2
-        }, {});
-        return {...payload, ...newPayload}
-      } catch {
-        console.log('error parsing json for guest info');
-        return acc;
-      }
-
-    }, {});
-
-
-
+    const guestJson = joinJson(jsonChunks, callType);
     const guestSummary = await gpt4.call(
       `Please take the following JSON object that describes a guest and turn it into a paragraph that describes the guest in detail. Please include any information that may be useful in a conversation with the guest, such as their interests, preferences, or any other information that may make the conversation more personal. Please remember not to infer or make up any information that isn't present or explicitly stated in the JSON object. Here is the JSON object: ${JSON.stringify(
         guestJson
