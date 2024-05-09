@@ -148,4 +148,26 @@ function cleanData(data) {
 }
 
 
+export function jsonToPlainText(json) {
+  function formatValue(value) {
+    if (Array.isArray(value)) {
+      return value.map(item => '\n- ' + formatValue(item)).join('');
+    } else if (typeof value === 'object' && value !== null) {
+      return objectToPlainText(value);
+    } else {
+      return String(value);
+    }
+  }
 
+  function objectToPlainText(obj) {
+    return Object.entries(obj).map(([key, value]) => {
+      return `${capitalizeFirstLetter(key)}: ${formatValue(value)}`;
+    }).join('.\n');
+  }
+
+  function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  return objectToPlainText(json);
+}

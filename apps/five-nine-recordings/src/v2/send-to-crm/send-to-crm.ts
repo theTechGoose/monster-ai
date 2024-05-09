@@ -12,6 +12,7 @@ import {formatDistance} from 'date-fns'
 import { getMetaData, clearMetaData } from '../shared/data-manager';
 import { getTimeInDiff } from './get-time-diff';
 import { getDurationFromSeconds, timer } from '../shared/timer';
+import { jsonToPlainText } from '../summary/join-json/join-json';
 
 const readFileAsync = promises.readFile;
 const readdirAsync = promisify(readdir);
@@ -57,9 +58,10 @@ async function execThread(path: string) {
   const info = await getMetaData(path)
   const content = await readFileAsync(path);
   const { type, foundCallIds, endDate } = info;
-  console.log({endDate})
+  const guestJson = info.guestJson
+  const guestNotes = jsonToPlainText(guestJson)
   const stringifiedDate = endDate.toISOString()
-  await sendToCrm(foundCallIds, type, content.toString(), stringifiedDate, ENV);
+  await sendToCrm(foundCallIds, type, content.toString(), stringifiedDate, guestNotes, ENV, );
   await execAsync(`rm ${path}`);
   pm.stop(path);
   pm.cleanUp(path);
@@ -97,6 +99,7 @@ async function sendToCrm(
   type: string,
   transcription: string,
   endDate: string,
+  guestNotes: string,
   target: 'test' | 'prod'
 ) {
   const testUrl = 'https://rofer-server.ngrok.io/monster-mono-repo/us-central1';
@@ -109,6 +112,7 @@ async function sendToCrm(
     type,
     transcription,
     date: endDate,
+    guestNotes,
   };
   const headers = {
     Authorization: 'Basic cmFmYXNCYWNrZW5kOnBpenphVGltZTIwMDAh',
