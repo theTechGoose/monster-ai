@@ -287,7 +287,6 @@ please ensure that the output is less than 3 sentences. Please make sure that th
   const guestInfoSummary = infoOutput?.guestSummary;
   const guestJson = JSON.stringify(infoOutput?.guestJson, null, 2);
   const guestInfoChunks = infoOutput?.jsonChunks;
-  console.log({guestSummary2: guestInfoSummary})
 
   return { output, summaryText, smolSummary, guestInfoSummary, guestJson, guestInfoChunks  };
 }
