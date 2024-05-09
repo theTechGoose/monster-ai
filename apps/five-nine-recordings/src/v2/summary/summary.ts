@@ -321,13 +321,13 @@ async function getGuestInfoSummary(chunks: Array<string>, callType: string) {
   try {
     let jsonChunks = await getSubInfo(chunks, callType);
     const guestJson = joinJson(jsonChunks, callType);
-    const guestSummary = await gpt4.call(
-      `Please take the following JSON object that describes a guest and turn it into a paragraph that describes the guest in detail. Please include any information that may be useful in a conversation with the guest, such as their interests, preferences, or any other information that may make the conversation more personal. Please remember not to infer or make up any information that isn't present or explicitly stated in the JSON object. Here is the JSON object: ${JSON.stringify(
-        guestJson
-      )}. The output should be at most 5 sentences and should be detailed and specific. Do not include any information that has to do with credit card information.
-`
-    );
-    console.log({guestSummary1: guestSummary})
+//     const guestSummary = await gpt4.call(
+//       `Please take the following JSON object that describes a guest and turn it into a paragraph that describes the guest in detail. Please include any information that may be useful in a conversation with the guest, such as their interests, preferences, or any other information that may make the conversation more personal. Please remember not to infer or make up any information that isn't present or explicitly stated in the JSON object. Here is the JSON object: ${JSON.stringify(
+//         guestJson
+//       )}. The output should be at most 5 sentences and should be detailed and specific. Do not include any information that has to do with credit card information.
+// `
+//     );
+    const guestSummary = ''
 
     return {guestJson, jsonChunks, guestSummary}
   } catch {
