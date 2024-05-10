@@ -58,8 +58,12 @@ async function execThread(path: string) {
   const info = await getMetaData(path)
   const content = await readFileAsync(path);
   const { type, foundCallIds, endDate } = info;
+  console.log(info)
+  let guestNotes  = ''
+  if(info.guestJson) {
   const guestJson = JSON.parse(info.guestJson)
-  const guestNotes = jsonToPlainText(guestJson)
+   guestNotes = jsonToPlainText(guestJson)
+  }
   const stringifiedDate = endDate.toISOString()
   await sendToCrm(foundCallIds, type, content.toString(), stringifiedDate, guestNotes, ENV, );
   await execAsync(`rm ${path}`);
