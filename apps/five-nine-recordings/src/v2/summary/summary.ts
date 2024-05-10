@@ -99,9 +99,9 @@ async function execThread(path: string) {
   pm.cleanUp(path);
   const times = timer(path);
   const metaData = await getMetaData(path);
-  metaData.guestInfoSummary = summaryOutput.guestInfoSummary
-  metaData.guestJson = summaryOutput.guestJson
-  metaData.guestInfoChunks = summaryOutput.guestInfoChunks;
+  // metaData.guestInfoSummary = summaryOutput.guestInfoSummary
+  // metaData.guestJson = summaryOutput.guestJson
+  // metaData.guestInfoChunks = summaryOutput.guestInfoChunks;
   metaData.times.summarize = times;
   metaData.summary = {};
   metaData.summary.final = summaryOutput.output;
@@ -283,12 +283,12 @@ please ensure that the output is less than 3 sentences. Please make sure that th
 `);
   }
 
-  const infoOutput = await getGuestInfoSummary(chunks, callType);
-  const guestInfoSummary = infoOutput?.guestSummary;
-  const guestJson = JSON.stringify(infoOutput?.guestJson, null, 2);
-  const guestInfoChunks = infoOutput?.jsonChunks;
+  //const infoOutput = await getGuestInfoSummary(chunks, callType);
+  // const guestInfoSummary = infoOutput?.guestSummary;
+  // const guestJson = JSON.stringify(infoOutput?.guestJson, null, 2);
+  // const guestInfoChunks = infoOutput?.jsonChunks;
 
-  return { output, summaryText, smolSummary, guestInfoSummary, guestJson, guestInfoChunks  };
+  return { output, summaryText, smolSummary};
 }
 
 async function getSubSummaries(chunks: Array<string>, callType: string) {
