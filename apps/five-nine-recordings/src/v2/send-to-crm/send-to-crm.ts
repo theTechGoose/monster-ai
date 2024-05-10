@@ -58,10 +58,10 @@ async function execThread(path: string) {
   const info = await getMetaData(path)
   const content = await readFileAsync(path);
   const { type, foundCallIds, endDate } = info;
-  const guestJson = JSON.parse(info.guestJson)
-  const guestNotes = jsonToPlainText(guestJson)
+  // const guestJson = JSON.parse(info.guestJson)
+  // const guestNotes = jsonToPlainText(guestJson)
   const stringifiedDate = endDate.toISOString()
-  await sendToCrm(foundCallIds, type, content.toString(), stringifiedDate, guestNotes, ENV, );
+  await sendToCrm(foundCallIds, type, content.toString(), stringifiedDate, ENV, );
   await execAsync(`rm ${path}`);
   pm.stop(path);
   pm.cleanUp(path);
@@ -99,7 +99,6 @@ async function sendToCrm(
   type: string,
   transcription: string,
   endDate: string,
-  guestNotes: string,
   target: 'test' | 'prod'
 ) {
   const testUrl = 'https://rofer-server.ngrok.io/monster-mono-repo/us-central1';
@@ -112,12 +111,10 @@ async function sendToCrm(
     type,
     transcription,
     date: endDate,
-    guestNotes,
   };
   const headers = {
     Authorization: 'Basic cmFmYXNCYWNrZW5kOnBpenphVGltZTIwMDAh',
   };
-  console.log({payload})
   const request = await axios.post(final, payload, { headers });
   return request.data;
 }
