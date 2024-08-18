@@ -1,14 +1,15 @@
 import os from 'os';
 import { readdir } from 'fs';
-import { promisify } from 'util';
 import { UPDATE_INTERVAL } from '../../main';
 import { ProcessManager } from '../shared/process-manager';
+import { promisify } from 'util';
 import { exec } from 'child_process';
 import chalk from 'chalk';
 import {timeTracker} from './stats'
 import { timer } from '../shared/timer';
 import { getMetaData, setMetaData } from '../shared/data-manager';
 import {getAudioDurationInSeconds} from 'get-audio-duration'
+import { jobManager } from '../queue';
 
 const MODELS = {
   tiny: 'tiny',
@@ -19,7 +20,7 @@ const MODELS = {
 
 const readdirAsync = promisify(readdir);
 const execAsync = promisify(exec);
-const pm = new ProcessManager(3);
+const pm = new ProcessManager(3); // 3
 
 let transcriptionQueue = [];
 
@@ -60,7 +61,8 @@ async function execThread(path: string) {
   const model = MODELS.large
   const threads = 5
   const command = `PATH=/home/raphael/whisper_edit/bin:$PATH && whisperx "${path}" --output_dir "${transcriptionPath}" --model ${model} --output_format srt --language en  --threads ${threads} --hf_token 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 --diarize --min_speakers 1 --max_speakers 2`;
-  await execAsync(command);
+  await jobManager.newJob({type: 'transcription', prompt: command})
+  // await execAsync(command);
   console.log('************************************')
   console.log(chalk.blue(`transcribed ${fileName}`))
   const stats = await timeTracker(path)

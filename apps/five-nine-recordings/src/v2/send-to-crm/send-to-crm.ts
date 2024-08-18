@@ -18,7 +18,7 @@ const readFileAsync = promises.readFile;
 const readdirAsync = promisify(readdir);
 const execAsync = promisify(exec);
 
-const pm = new ProcessManager(4);
+const pm = new ProcessManager(4); // 4
 
 let sendQueue = [];
 
