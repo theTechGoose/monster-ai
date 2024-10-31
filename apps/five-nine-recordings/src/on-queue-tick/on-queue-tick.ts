@@ -149,14 +149,21 @@ async function findInCrm(phone: string, target: 'test' | 'prod') {
     'https://us-central1-monster-mono-repo-beta.cloudfunctions.net';
   const url = target === 'test' ? testUrl : prodUrl;
   const final = `${url}/api/utils/find-call`;
+  console.log({final})
   const payload = {
     phone,
   };
   const headers = {
     Authorization: 'Basic cmFmYXNCYWNrZW5kOnBpenphVGltZTIwMDAh',
   };
-  const request = await axios.post(final, payload, { headers });
+  try{
+  const request = await axios.post(final, payload, { headers, timeout: 2500 });
   return request.data;
+  } catch(e) {
+    console.log(e.response)
+    throw new Error(e)
+    
+  }
 }
 
 async function sendToCrm(
