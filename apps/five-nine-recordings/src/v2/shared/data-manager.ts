@@ -26,9 +26,11 @@ function getPathToMetaData(id: string) {
 }
 
 export async function getMetaData(path: string): Promise<any> {
+  let fileData = Buffer.from('')
+  try {
   const id = path.split('.')[0].split('/').reverse()[0]
   const metaDataPath = getPathToMetaData(id)
-  const fileData = await asyncRead(metaDataPath)
+  fileData = await asyncRead(metaDataPath)
   const metaData = JSON.parse(fileData.toString())
     const parsedDates = Object.entries(metaData).reduce((acc, curr) => {
     const [key, value] = curr as any
@@ -40,6 +42,11 @@ export async function getMetaData(path: string): Promise<any> {
   parsedDates.id = id
   if(!parsedDates.times) parsedDates.times = {}
   return parsedDates
+  } catch(e) {
+    console.log('failed to get metadata')
+    console.log(fileData.toString())
+    throw new Error(e)
+  }
 }
 
 function isISODate(dateString) {

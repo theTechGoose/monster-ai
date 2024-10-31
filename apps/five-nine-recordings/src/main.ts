@@ -41,7 +41,9 @@ startCallIdentification();
 startCallTranscription();
 startCallSummary();
 startSendToCrm();
-  
-  
 })
-  
+
+
+
+
+

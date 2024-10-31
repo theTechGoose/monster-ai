@@ -16,13 +16,15 @@ import { timer } from '../shared/timer';
 import { detectVoicemail } from './voicemail-detector';
 import { condenseSpeech } from './condense-speakers';
 import { joinJson } from './join-json/join-json';
+import { runSummaryFlow } from '../../local-llm';
+import { jobManager } from '../queue';
 
 const readFileAsync = promises.readFile;
 const writeFileAsync = promises.writeFile;
 const readdirAsync = promisify(readdir);
 const execAsync = promisify(exec);
 
-const pm = new ProcessManager(4);
+const pm = new ProcessManager(4); // 4
 
 let summaryQueue = [];
 
@@ -92,6 +94,9 @@ async function execThread(path: string) {
   const summary = summaryOutput.output;
   const tidy = tidySummary(summary, info, summaryOutput.smolSummary);
   const summaryPath = `${os.homedir()}/summaries/${fileName}.txt`;
+  console.log('CCCCCCCCCCCCCC')
+  console.log({tidy})
+  console.log('CCCCCCCCCCCCCC')
   await writeFileAsync(summaryPath, tidy);
   await execAsync(`rm "${path}"`);
   console.log(chalk.blue(`Summary ${fileName} complete`));
@@ -124,10 +129,11 @@ async function cleanUpFailedThread(path: string, e: Error) {
 
 function tidySummary(summary: string, ids: any, smolSummary: string) {
   const { repName, endDate, startDate, callId, recordingDuration } = ids;
-  const roundDuration = Math.round(recordingDuration);
+  const roundDuration = Math.round(recordingDuration ?? 0);
   const now = new Date();
   const later = addSeconds(now, roundDuration);
-  const prettyDuration = formatDistance(now, later);
+  let prettyDuration = formatDistance(now, later);
+  if(roundDuration === 0) prettyDuration = 'unknown'
   // let hours = Math.floor(recordingDuration / 3600).toString()
   // hours = hours.length < 2 ? `0${hours}` : hours
   // let minutes = Math.floor((recordingDuration % 3600) / 60).toString()
@@ -144,6 +150,8 @@ function tidySummary(summary: string, ids: any, smolSummary: string) {
   if (milidiff < 100) {
     duration = 'unknown';
   }
+  console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAA')
+  console.log(summary)
   let output = summary;
 
   output = `${fomattedCallId} was a ${ids.type} call on ${ids.guestPhone} by ${ids.fullRep} it lasted ${prettyDuration}:  \n\n ${output} `;
@@ -212,9 +220,6 @@ Please take into account these key areas while identifying the most critical inf
       .join('<speakerTurn>')}
 
 this is an example of bad output, do not produce output like this or that contains the following please: Although the conversation didn't explicitly mention chargebacks, bank calls, refunds, bad guest experiences, misunderstandings, or the team member going the extra mile, these elements were not present in the bullet points provided.
-
-
-
 `;
     const vmOutput = await llm.call(voicemailPrompt);
     return {
@@ -222,7 +227,41 @@ this is an example of bad output, do not produce output like this or that contai
       summaryText: 'voicemail',
     };
   }
+
+  
+const promptTemplate = `I require a succinct summary of a phone call held between a guest and a team member at Monster Reservations Group. The summary should be strictly based on the provided transcriptions, with no additional inferences, assumptions, or fabricated information. 
+
+Below, you will find the necessary summaries for reference:
+
+--- Start Summaries ---
+
+${transcription}
+
+--- End Summaries ---
+
+Using these summaries as your source, craft a concise, comprehensive, and detailed account of the conversation.`
+  
   console.log(chalk.blue('Starting to get summary'));
+ // const summaryFlow = await jobManager.newJob({type: 'llm', prompt: promptTemplate})
+  
+
+    const smolSummaryTemplate = `Please create a 75 word or less summary of the following:
+
+=== start text ===
+
+=== end text ===
+
+please ensure that the output is less than 3 sentences. Please make sure that the output is less than 300 characters.`
+  // const llamaSmolSummry = await jobManager.newJob({type: 'llm', prompt: smolSummaryTemplate as string, model: 'summary-smol'})
+  // const summaryFlow = await runSummaryFlow(transcription)
+  // const llamaSmolSummry = await runSummaryFlow(summaryFlow, 'summary-smol')
+  // return {
+  //   output: summaryFlow as string,
+  //   summaryText: transcription as string,
+  //   smolSummary: llamaSmolSummry as string
+  // }
+  
+    
   let summaryChunks = await getSubSummaries(chunks, callType);
 
   let summaryText = summaryChunks.join('\n\n');
@@ -288,6 +327,7 @@ please ensure that the output is less than 3 sentences. Please make sure that th
   // const guestJson = JSON.stringify(infoOutput?.guestJson, null, 2);
   // const guestInfoChunks = infoOutput?.jsonChunks;
 
+  
   return { output, summaryText, smolSummary};
 }
 
