@@ -5,7 +5,7 @@
   "scripts": {
     "start": "nx build server && cd dist/apps/server && node main.js",
     "emulate:server": "./scripts/emulate-server.sh",
-    "test:agent": "nx serve agent"
+    "run:server": "./serve.sh" 
   },
   "private": true,
   "dependencies": {

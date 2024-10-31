@@ -129,7 +129,7 @@ async function cleanUpFailedThread(path: string, e: Error) {
 
 function tidySummary(summary: string, ids: any, smolSummary: string) {
   const { repName, endDate, startDate, callId, recordingDuration } = ids;
-  const roundDuration = Math.round(recordingDuration ?? 0)
+  const roundDuration = Math.round(recordingDuration ?? 0);
   const now = new Date();
   const later = addSeconds(now, roundDuration);
   let prettyDuration = formatDistance(now, later);
