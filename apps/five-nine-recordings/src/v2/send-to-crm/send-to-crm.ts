@@ -116,5 +116,6 @@ async function sendToCrm(
     Authorization: 'Basic cmFmYXNCYWNrZW5kOnBpenphVGltZTIwMDAh',
   };
   const request = await axios.post(final, payload, { headers });
+  console.log({final, payload, headers, data: request.data})
   return request.data;
 }

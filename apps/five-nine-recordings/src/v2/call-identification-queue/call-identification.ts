@@ -26,7 +26,7 @@ const readdirAsync = promisify(readdir);
 
 let identificationQueue = [];
 
-const pm = new ProcessManager(8);
+const pm = new ProcessManager(1);
 
 export function startCallIdentification() {
   listenFiles();

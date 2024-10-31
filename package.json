@@ -4,7 +4,8 @@
   "license": "MIT",
   "scripts": {
     "start": "nx build server && cd dist/apps/server && node main.js",
-    "emulate:server": "./scripts/emulate-server.sh"
+    "emulate:server": "./scripts/emulate-server.sh",
+    "run:server": "./serve.sh" 
   },
   "private": true,
   "dependencies": {
