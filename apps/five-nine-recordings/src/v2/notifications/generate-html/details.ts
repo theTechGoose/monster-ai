@@ -5,6 +5,7 @@ interface CardData {
 interface TranscriptLine {
   speaker: string;
   text: string;
+  flag?: string,
 }
 
 interface GeneratedDetails {
@@ -86,12 +87,17 @@ function createTranscript(transcript: TranscriptLine[]): string {
 }
 
 function formatTranscript(transcript: TranscriptLine[]): string {
+  const userMapping = Array.from(new Set(transcript.map(l => l.speaker)))
+  const [a, u] = userMapping
+
+
   return transcript
     .filter(({ speaker }) => speaker.trim())
     .map((line) => {
       const sanitizedSpeaker = sanitizeSpeaker(line.speaker);
+      const cl = line.speaker === a ? 'ASSISTANT' : 'USER';
       return `
-        <p class="speaker-${sanitizedSpeaker}"><strong>${sanitizedSpeaker}:</strong> ${line.text}</p>
+        <p class="speaker-${cl}"><strong>${sanitizedSpeaker}:</strong> ${line.text}</p>
       `;
     })
     .join('');

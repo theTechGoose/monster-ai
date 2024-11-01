@@ -25,7 +25,6 @@ async function uploadImageToImgur(filePath: string): Promise<string | null> {
             console.log(error.response.data)
             return null;
         }
-
 }
 
 export async function renderHtmlAndCaptureScreenshot(html: string) {
@@ -33,10 +32,13 @@ export async function renderHtmlAndCaptureScreenshot(html: string) {
     const page = await browser.newPage();
      await page.setContent(html, { waitUntil: 'networkidle' });
      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for the page to settle
-     const  file = tmp.fileSync()
+     const  file = tmp.fileSync({ postfix: '.jpeg' })
      await page.screenshot({ path: file.name, fullPage: true});
      const link = await uploadImageToImgur(file.name)
+     console.log(link)
+
 const imgTag = `
+<p>Quick test run! The email and notification systems are ready to go. Now, it's just a matter of testing for edge cases and setting up the reporting. If all goes well (which it will), we’re good to flip the switch by noon tomorrow!</p>
 <img src="${link}" alt="screenshot" style="max-width: 100%; height: auto; display: block; margin: 0 auto;" />`
 return imgTag
 

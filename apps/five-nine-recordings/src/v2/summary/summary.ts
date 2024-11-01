@@ -17,6 +17,40 @@ import { condenseSpeech } from './condense-speakers';
 import { joinJson } from './join-json/join-json';
 import { runSummaryFlow } from '../../local-llm';
 import { jobManager } from '../queue';
+import { EmailClient, KeywordChecker, NotifierFactory, SpreadsheetClient } from '../notifications/main';
+
+
+async function runNotifier(transcripton: string, callId: string, reservationid: string, _metadata: any) {
+const metadata = {callId: callId, 'reservationId': reservationid }
+
+const emails = [
+  "rafac@monsterrg.com",
+  "amcgill@monsterrg.com",
+  "brittanyl@monsterrg.com",
+  "garrettc@monsterrg.com",
+  "juliaa@monsterrg.com",
+  "bertt@monsterrg.com",
+  "jeremyc@monsterrg.com",
+  "support@monsterrg.com"
+]
+
+  const keywords = [
+ "attorney",
+ "lawyer",
+ "dispute",
+ "bureau ",
+ "fuck",
+ "scam",
+ "liar",
+  ]
+
+  const emailClient = new EmailClient(emails)
+  const sheetClient = new SpreadsheetClient()
+  const notifier = new NotifierFactory([sheetClient, emailClient])
+  const checker = new KeywordChecker(keywords)
+  checker.on('found', notifier.manufacture())
+  await checker.check(transcripton ,metadata)
+}
 
 const readFileAsync = promises.readFile;
 const writeFileAsync = promises.writeFile;
@@ -103,6 +137,7 @@ async function execThread(path: string) {
   pm.cleanUp(path);
   const times = timer(path);
   const metaData = await getMetaData(path);
+  runNotifier(content, metaData.callId, metaData.foundCallIds.join(','), metaData)
   // metaData.guestInfoSummary = summaryOutput.guestInfoSummary
   // metaData.guestJson = summaryOutput.guestJson
   // metaData.guestInfoChunks = summaryOutput.guestInfoChunks;
@@ -227,8 +262,8 @@ this is an example of bad output, do not produce output like this or that contai
     };
   }
 
-  
-const promptTemplate = `I require a succinct summary of a phone call held between a guest and a team member at Monster Reservations Group. The summary should be strictly based on the provided transcriptions, with no additional inferences, assumptions, or fabricated information. 
+
+const promptTemplate = `I require a succinct summary of a phone call held between a guest and a team member at Monster Reservations Group. The summary should be strictly based on the provided transcriptions, with no additional inferences, assumptions, or fabricated information.
 
 Below, you will find the necessary summaries for reference:
 
@@ -239,10 +274,10 @@ ${transcription}
 --- End Summaries ---
 
 Using these summaries as your source, craft a concise, comprehensive, and detailed account of the conversation.`
-  
+
   console.log(chalk.blue('Starting to get summary'));
  // const summaryFlow = await jobManager.newJob({type: 'llm', prompt: promptTemplate})
-  
+
 
     const smolSummaryTemplate = `Please create a 75 word or less summary of the following:
 
@@ -259,8 +294,8 @@ please ensure that the output is less than 3 sentences. Please make sure that th
   //   summaryText: transcription as string,
   //   smolSummary: llamaSmolSummry as string
   // }
-  
-    
+
+
   let summaryChunks = await getSubSummaries(chunks, callType);
 
   let summaryText = summaryChunks.join('\n\n');
@@ -326,7 +361,7 @@ please ensure that the output is less than 3 sentences. Please make sure that th
   // const guestJson = JSON.stringify(infoOutput?.guestJson, null, 2);
   // const guestInfoChunks = infoOutput?.jsonChunks;
 
-  
+
   return { output, summaryText, smolSummary};
 }
 
