@@ -15,7 +15,12 @@ export class KeywordChecker {
     }
   }
 
-  async check(transcript: string, _metadata: any) {
+  async check(_transcript: string, _metadata: any) {
+    const transcript = parseTranscription(_transcript).filter(t => {
+      const isGuest = t.speaker.toLowerCase() === 'guest'
+      return isGuest
+    }).map(t => t.text).join('\n')
+    
     const transcriptArr = transcript.split(' ').map(a => this.removeNonAlphabetical(a))
     const words = transcriptArr.filter((w: any) => {
       const fixedWords =  this.keywords.map(k => this.removeNonAlphabetical(k).toLowerCase().trim())

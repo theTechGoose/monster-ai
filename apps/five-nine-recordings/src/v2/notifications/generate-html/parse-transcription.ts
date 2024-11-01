@@ -15,7 +15,7 @@ export function parseTranscription(transcription: string): Array<ParsedTranscrip
   arr = filterLinesWithBrackets(arr).map(l => l.split('\n')[0])
   let newArr = arr.map(a => a.split(':'))
   const output = newArr.map(([_speaker, text]) => {
-    const speaker = removeNonAlphabetical(_speaker)
+    const speaker = _speaker.toUpperCase()
     return {speaker, text}
 
   })
@@ -60,7 +60,8 @@ function cleanForJson(o: string) {
 }
 
  function splitByNumberAndNewLine(input: string): string[] {
-  return input.split(/(?<=\d+)\n/);
+  const arr = input.split('[')
+  return arr.map(a => `[${a}`)
 }
 
 export function filterLinesWithBrackets(lines: string[]): string[] {

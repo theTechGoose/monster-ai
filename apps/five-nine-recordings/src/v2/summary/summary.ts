@@ -15,6 +15,7 @@ import { timer } from '../shared/timer';
 import { detectVoicemail } from './voicemail-detector';
 import { condenseSpeech } from './condense-speakers';
 import { joinJson } from './join-json/join-json';
+import fs from 'fs'
 import { runSummaryFlow } from '../../local-llm';
 // import { jobManager } from '../queue';
 import { EmailClient, KeywordChecker, NotifierFactory, SpreadsheetClient } from '../notifications/main';
