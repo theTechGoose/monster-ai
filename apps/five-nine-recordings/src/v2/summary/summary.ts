@@ -7,7 +7,6 @@ import { promises } from 'fs';
 import { exec } from 'child_process';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { OpenAI } from 'langchain/llms/openai';
-import { getFileInfo } from '../shared/get-file-info';
 import chalk from 'chalk';
 import { analyzeText } from '../shared/deduper';
 import { addSeconds, formatDistance } from 'date-fns';
