@@ -7,7 +7,6 @@ import { promises } from 'fs';
 import { exec } from 'child_process';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { OpenAI } from 'langchain/llms/openai';
-import { getFileInfo } from '../shared/get-file-info';
 import chalk from 'chalk';
 import { analyzeText } from '../shared/deduper';
 import { addSeconds, formatDistance } from 'date-fns';
@@ -16,8 +15,6 @@ import { timer } from '../shared/timer';
 import { detectVoicemail } from './voicemail-detector';
 import { condenseSpeech } from './condense-speakers';
 import { joinJson } from './join-json/join-json';
-import { runSummaryFlow } from '../../local-llm';
-import { jobManager } from '../queue';
 
 const readFileAsync = promises.readFile;
 const writeFileAsync = promises.writeFile;
