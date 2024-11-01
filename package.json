@@ -5,7 +5,7 @@
   "scripts": {
     "start": "nx build server && cd dist/apps/server && node main.js",
     "emulate:server": "./scripts/emulate-server.sh",
-    "run:server": "./serve.sh" 
+    "run:server": "./serve.sh"
   },
   "private": true,
   "dependencies": {
@@ -43,6 +43,8 @@
     "mongodb": "^5.4.0",
     "nanoid": "^3.0.0",
     "papaparse": "^5.4.1",
+    "playwright": "^1.48.2",
+    "postmark": "^4.0.5",
     "puppeteer": "^20.1.2",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",

@@ -16,7 +16,7 @@ import { detectVoicemail } from './voicemail-detector';
 import { condenseSpeech } from './condense-speakers';
 import { joinJson } from './join-json/join-json';
 import { runSummaryFlow } from '../../local-llm';
-import { jobManager } from '../queue';
+// import { jobManager } from '../queue';
 import { EmailClient, KeywordChecker, NotifierFactory, SpreadsheetClient } from '../notifications/main';
 
 

@@ -9,7 +9,7 @@ import {timeTracker} from './stats'
 import { timer } from '../shared/timer';
 import { getMetaData, setMetaData } from '../shared/data-manager';
 import {getAudioDurationInSeconds} from 'get-audio-duration'
-import { jobManager } from '../queue';
+// import { jobManager } from '../queue';
 
 const MODELS = {
   tiny: 'tiny',
@@ -61,8 +61,8 @@ async function execThread(path: string) {
   const model = MODELS.large
   const threads = 5
   const command = `PATH=/home/raphael/whisper_edit/bin:$PATH && whisperx "${path}" --output_dir "${transcriptionPath}" --model ${model} --output_format srt --language en  --threads ${threads} --hf_token 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 --diarize --min_speakers 1 --max_speakers 2`;
-  await jobManager.newJob({type: 'transcription', prompt: command})
-  // await execAsync(command);
+  // await jobManager.newJob({type: 'transcription', prompt: command})
+  await execAsync(command);
   console.log('************************************')
   console.log(chalk.blue(`transcribed ${fileName}`))
   const stats = await timeTracker(path)
