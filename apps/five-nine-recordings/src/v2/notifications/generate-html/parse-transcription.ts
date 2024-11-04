@@ -11,13 +11,30 @@ interface ParsedTranscript {
 }
 
 export function parseTranscription(transcription: string): Array<ParsedTranscript> {
+  console.log('bbefore before before before before before efore before before before before before ')
+  console.log(transcription)
+  console.log('bbefore before before before before before efore before before before before before ')
   let arr = splitByNumberAndNewLine(transcription)
+  console.log('split')
+  console.log('split')
+  console.log('split')
+  console.log(arr)
+  
+  console.log('split')
+  console.log('split')
+  console.log('split')
   arr = filterLinesWithBrackets(arr).map(l => l.split('\n')[0])
   let newArr = arr.map(a => a.split(':'))
+  console.log('new Arryy')
+  console.log('new Arryy')
+  console.log('new Arryy')
+  console.log(newArr)
+  console.log('new Arryy')
+  console.log('new Arryy')
+  console.log('new Arryy')
   const output = newArr.map(([_speaker, text]) => {
-    const speaker = _speaker.toUpperCase()
+    const speaker = _speaker.toUpperCase().trim()
     return {speaker, text}
-
   })
 
   //const finalOut = [] as Array<any>
@@ -50,6 +67,9 @@ export function parseTranscription(transcription: string): Array<ParsedTranscrip
   //   cache = []
   //}
 
+  console.log('parse parse parse parse parse')
+  console.log(output)
+  console.log('parse parse parse parse parse')
   return output
 }
 

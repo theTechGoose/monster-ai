@@ -1,0 +1,360 @@
+1
+00:00:00,168 --> 00:00:04,231
+[SPEAKER_00]: Hello?
+
+2
+00:00:04,231 --> 00:00:05,652
+[SPEAKER_00]: Hello?
+
+3
+00:00:05,652 --> 00:00:06,813
+[SPEAKER_00]: Hi.
+
+4
+00:00:06,813 --> 00:00:09,275
+[SPEAKER_00]: Hey, my name is Richard from Monster Reservations Group.
+
+5
+00:00:09,275 --> 00:00:12,218
+[SPEAKER_00]: Are you calling to confirm a reservation today lawyer?
+
+6
+00:00:12,218 --> 00:00:13,439
+[SPEAKER_00]: I am.
+
+7
+00:00:13,439 --> 00:00:14,659
+[SPEAKER_00]: I love to hear it.
+
+8
+00:00:14,659 --> 00:00:15,380
+[SPEAKER_00]: Give me one second.
+
+9
+00:00:15,380 --> 00:00:17,962
+[SPEAKER_00]: Let me pull up this reservation for you.
+
+10
+00:00:17,962 --> 00:00:18,843
+[SPEAKER_00]: Okay.
+
+11
+00:00:18,843 --> 00:00:22,666
+[SPEAKER_00]: Are you getting excited to get out of the house for a couple of days?
+
+12
+00:00:22,666 --> 00:00:25,208
+[SPEAKER_00]: Yes.
+
+13
+00:00:25,208 --> 00:00:27,289
+[SPEAKER_00]: I love to hear it.
+
+14
+00:00:27,289 --> 00:00:29,271
+[SPEAKER_00]: Let me see what I got going on here for you.
+
+15
+00:00:30,771 --> 00:00:32,132
+[SPEAKER_00]: Um, Ms.
+
+16
+00:00:32,132 --> 00:00:34,753
+[SPEAKER_00]: Susan and Mr. Chris, I'm sorry, I don't want to mispronounce your last name.
+
+17
+00:00:34,753 --> 00:00:38,216
+[SPEAKER_00]: Um, and that's Endehol, Endehdorf?
+
+18
+00:00:38,216 --> 00:00:39,677
+[SPEAKER_00]: Eulendorf.
+
+19
+00:00:39,677 --> 00:00:41,278
+[SPEAKER_00]: I wasn't even close.
+
+20
+00:00:41,278 --> 00:00:43,279
+[SPEAKER_00]: Uh, my apologies.
+
+21
+00:00:43,279 --> 00:00:44,720
+[SPEAKER_00]: You're fine.
+
+22
+00:00:44,720 --> 00:00:50,203
+[SPEAKER_00]: Um, I got you guys going out here to Cape Canaveral on the 28th of this month, is that correct?
+
+23
+00:00:50,203 --> 00:00:51,324
+[SPEAKER_00]: Yeah.
+
+24
+00:00:51,324 --> 00:00:52,285
+[SPEAKER_00]: Wonderful.
+
+25
+00:00:52,285 --> 00:00:55,467
+[SPEAKER_00]: Of course, this call is recorded for quality as well as training purposes.
+
+26
+00:00:56,066 --> 00:00:58,788
+[SPEAKER_00]: Now, I see you set this reservation up on the 29th.
+
+27
+00:00:58,788 --> 00:01:05,073
+[SPEAKER_00]: So some of what I'm going to run through today might seem a little bit repetitive, but it's going to take me less than three minutes with you, Ms.
+
+28
+00:01:05,073 --> 00:01:05,373
+[SPEAKER_00]: Susan.
+
+29
+00:01:05,373 --> 00:01:10,177
+[SPEAKER_00]: I'm going to make sure everything is in order for your reservation, and then I'll be out of your hair like shampoo.
+
+30
+00:01:10,177 --> 00:01:10,517
+[SPEAKER_00]: Sound good?
+
+31
+00:01:10,517 --> 00:01:12,979
+[SPEAKER_00]: OK.
+
+32
+00:01:12,979 --> 00:01:14,020
+[SPEAKER_00]: Perfect.
+
+33
+00:01:14,020 --> 00:01:21,046
+[SPEAKER_00]: Of course, I do have you guys checking in at the beautiful Holiday Inn Express and Suites out there on Cocoa Beach.
+
+34
+00:01:21,046 --> 00:01:25,049
+[SPEAKER_00]: They do, of course, have you guys in that suite unit that doesn't sleep for very comfortably.
+
+35
+00:01:25,574 --> 00:01:30,717
+[SPEAKER_00]: for the five days and four nights, of course, arriving on Thursday, the 28th.
+
+36
+00:01:30,717 --> 00:01:35,721
+[SPEAKER_00]: Checking out on the second, that's, of course, going to be that following Monday.
+
+37
+00:01:35,721 --> 00:01:37,602
+[SPEAKER_00]: And I just have the two adults on this reservation.
+
+38
+00:01:37,602 --> 00:01:39,543
+[SPEAKER_00]: Does that all sound correct?
+
+39
+00:01:39,543 --> 00:01:40,784
+[SPEAKER_00]: Yes.
+
+40
+00:01:40,784 --> 00:01:41,624
+[SPEAKER_00]: Perfect.
+
+41
+00:01:41,624 --> 00:01:44,026
+[SPEAKER_00]: These next questions I do have for you are very important.
+
+42
+00:01:44,026 --> 00:01:46,488
+[SPEAKER_00]: This is going to be that repetitive part, like I mentioned.
+
+43
+00:01:46,488 --> 00:01:50,750
+[SPEAKER_00]: I, of course, have you on this reservation as married, that is legally married, correct?
+
+44
+00:01:50,750 --> 00:01:51,711
+[SPEAKER_00]: Correct.
+
+45
+00:01:51,711 --> 00:01:52,471
+[SPEAKER_00]: You guys, U.S.
+
+46
+00:01:52,471 --> 00:01:53,372
+[SPEAKER_00]: or Canadian citizens?
+
+47
+00:01:55,310 --> 00:01:56,451
+[SPEAKER_00]: US.
+
+48
+00:01:56,451 --> 00:01:59,292
+[SPEAKER_00]: You guys, of course, have matching addresses on those driver's license.
+
+49
+00:01:59,292 --> 00:02:02,713
+[SPEAKER_00]: Those IDs are valid, not expired time of check-in.
+
+50
+00:02:02,713 --> 00:02:03,894
+[SPEAKER_00]: Yep.
+
+51
+00:02:03,894 --> 00:02:07,295
+[SPEAKER_00]: What would you estimate your combined annual income to be prior to taxes a year?
+
+52
+00:02:07,295 --> 00:02:11,157
+[SPEAKER_00]: Doesn't need to be exact, just an estimate.
+
+53
+00:02:11,157 --> 00:02:11,998
+[SPEAKER_00]: $500.
+
+54
+00:02:11,998 --> 00:02:15,579
+[SPEAKER_00]: No bankruptcy, of course, in the last two years, correct?
+
+55
+00:02:15,579 --> 00:02:16,660
+[SPEAKER_00]: No.
+
+56
+00:02:16,660 --> 00:02:21,842
+[SPEAKER_00]: No friends or family traveling on a separate monster package, same date and destination as you?
+
+57
+00:02:21,842 --> 00:02:21,922
+[SPEAKER_00]: No.
+
+58
+00:02:22,794 --> 00:02:26,797
+[SPEAKER_00]: Do you own any timeshares associated with any vacation clubs?
+
+59
+00:02:26,797 --> 00:02:28,078
+[SPEAKER_00]: No.
+
+60
+00:02:28,078 --> 00:02:32,021
+[SPEAKER_00]: One of you guys can provide a major debit or credit card in your name?
+
+61
+00:02:32,021 --> 00:02:33,142
+[SPEAKER_00]: Yeah.
+
+62
+00:02:33,142 --> 00:02:36,064
+[SPEAKER_00]: And are you guys at least 28 years of age or sorry, 25 years of age?
+
+63
+00:02:36,064 --> 00:02:38,526
+[SPEAKER_00]: Yeah.
+
+64
+00:02:38,526 --> 00:02:39,486
+[SPEAKER_00]: Perfect.
+
+65
+00:02:39,486 --> 00:02:42,008
+[SPEAKER_00]: Of course, Holiday Inn is going to be our premier timeshare developer.
+
+66
+00:02:42,008 --> 00:02:45,791
+[SPEAKER_00]: They're going to showcase to you how you can travel to some amazing resorts worldwide.
+
+67
+00:02:45,791 --> 00:02:51,195
+[SPEAKER_00]: The only thing they do ask is that you do attend that approximately 120 minute timeshare sales presentation.
+
+68
+00:02:51,195 --> 00:02:52,316
+[SPEAKER_00]: No obligation to purchase.
+
+69
+00:02:52,652 --> 00:02:54,353
+[SPEAKER_00]: just to keep that open mind.
+
+70
+00:02:54,353 --> 00:02:58,534
+[SPEAKER_00]: You can do that for us if we can make it fun and enjoyable for you in return.
+
+71
+00:02:58,534 --> 00:02:59,954
+[SPEAKER_00]: Okay.
+
+72
+00:02:59,954 --> 00:03:04,115
+[SPEAKER_00]: Of course that presentation is scheduled for on the 29th at 11 30 a.m.
+
+73
+00:03:04,115 --> 00:03:09,457
+[SPEAKER_00]: Of course you will be receiving your $150 back upon completion of that presentation.
+
+74
+00:03:09,457 --> 00:03:15,699
+[SPEAKER_00]: Besides that the only way that you'll be charged anything additional is if you do not attend that presentation in its entirety.
+
+75
+00:03:15,699 --> 00:03:22,321
+[SPEAKER_00]: If any of the qualifications I went over don't match up whenever you check in, if you cancel your reservation four days prior to your arrival,
+
+76
+00:03:22,705 --> 00:03:26,969
+[SPEAKER_00]: or if you guys don't show up whatsoever, okay?
+
+77
+00:03:26,969 --> 00:03:29,931
+[SPEAKER_00]: Have we changed the presentation?
+
+78
+00:03:29,931 --> 00:03:30,612
+[SPEAKER_00]: No.
+
+79
+00:03:30,612 --> 00:03:34,415
+[SPEAKER_00]: Yeah, so whenever you guys arrive on property, that'll be the best time to do it.
+
+80
+00:03:34,415 --> 00:03:36,256
+[SPEAKER_00]: That's when they have the most open availability.
+
+81
+00:03:36,256 --> 00:03:38,578
+[SPEAKER_00]: They'll go over that time with you as well.
+
+82
+00:03:38,578 --> 00:03:39,899
+[SPEAKER_00]: Okay.
+
+83
+00:03:39,899 --> 00:03:40,760
+[SPEAKER_00]: Perfect.
+
+84
+00:03:40,760 --> 00:03:44,583
+[SPEAKER_00]: Any other questions or concerns I can answer for you today before I let you go?
+
+85
+00:03:44,583 --> 00:03:45,584
+[SPEAKER_00]: No.
+
+86
+00:03:45,584 --> 00:03:46,204
+[SPEAKER_00]: Perfect.
+
+87
+00:03:46,204 --> 00:03:51,108
+[SPEAKER_00]: Well, we really appreciate you for being the Best 4 About Monster, and you have an absolutely amazing rest of your day, okay?
+
+88
+00:03:51,968 --> 00:03:52,630
+[SPEAKER_00]: You too.
+
+89
+00:03:52,630 --> 00:03:53,252
+[SPEAKER_00]: Bye.
+
+90
+00:03:53,252 --> 00:03:53,633
+[SPEAKER_00]: Bye-bye.
+

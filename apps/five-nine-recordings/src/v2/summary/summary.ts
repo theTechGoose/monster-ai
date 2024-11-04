@@ -19,9 +19,11 @@ import fs from 'fs'
 import { runSummaryFlow } from '../../local-llm';
 // import { jobManager } from '../queue';
 import { EmailClient, KeywordChecker, NotifierFactory, SpreadsheetClient } from '../notifications/main';
+import { parseTranscription } from '../notifications/generate-html/parse-transcription';
 
 
 async function runNotifier(transcripton: string, callId: string, reservationid: string, _metadata: any) {
+  parseTranscription(transcripton)
 const metadata = {callId: callId, 'reservationId': reservationid }
 
 const emails = [

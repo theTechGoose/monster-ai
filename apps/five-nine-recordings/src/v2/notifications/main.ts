@@ -17,24 +17,31 @@ export class KeywordChecker {
 
   async check(_transcript: string, _metadata: any) {
     const transcript = parseTranscription(_transcript).filter(t => {
-      const isGuest = t.speaker.toLowerCase() === 'guest'
+      const checkStr = t.speaker.toLowerCase().trim()
+      const isGuest = checkStr.includes('guest')
+      console.log({isGuest, checkStr})
       return isGuest
-    }).map(t => t.text).join('\n')
+    }).map(t => t.text.split('\n').join(' ')).join('\n')
+    console.log({newTranscriptForFilter: transcript})
     
     const transcriptArr = transcript.split(' ').map(a => this.removeNonAlphabetical(a))
-    const words = transcriptArr.filter((w: any) => {
+    const replaceIndex = []
+    const words = transcriptArr.filter((w: any, i: number) => {
       const fixedWords =  this.keywords.map(k => this.removeNonAlphabetical(k).toLowerCase().trim())
       const isIncluded = fixedWords.includes(w.toLowerCase().trim())
+      if(isIncluded) replaceIndex.push(i)
       return isIncluded
     })
 
-    const metadata = {..._metadata, Trigger: words.join(' ').toUpperCase(), keywords: this.keywords}
+    const toReplace = replaceIndex.map(r => transcriptArr[r])
 
-    const isFound = !!words.join(',').trim()
+    const metadata = {..._metadata, toReplace, Trigger: words.join(' ').toUpperCase(), keywords: this.keywords}
+
+    const isFound = words.join(',').trim()
     fs.writeFileSync('log.txt', JSON.stringify({transcriptArr, words, keywords: this.keywords}, null, 2))
     if(!isFound) return
       for(let cb of this.callbacks) {
-        await cb(transcript, metadata)
+        await cb(_transcript, metadata)
       }
   }
  removeNonAlphabetical(input: string): string {
@@ -100,7 +107,8 @@ export class EmailClient extends Client {
     const payload = {
       'Call ID': metadata.callId,
       'Reservation ID': metadata.reservationId,
-      'Trigger': metadata.trigger
+      'Trigger': metadata.trigger,
+      'Team-Member': metadata.fullRep
     }
 
     const title = 'Response Needed'
@@ -111,6 +119,24 @@ export class EmailClient extends Client {
   async send(t: string, m: any) {
    const client = this.getClient()
    const users = this.distributionList.join(',')
+    let sections = parseTranscription(t).map(fragment => {
+      return `
+      <p style="margin: 0 0 10px;">
+        <b style="color: #2ecc71;">${fragment.speaker}</b>: ${fragment.text}
+      </p>
+    `}).join('')
+    
+    m.toReplace.forEach(r => {
+      const template = `<span style="font-weight: bold; color: #e74c3c;">${r}</span>`
+      sections = sections.split(r).join(template)
+      
+    })
+    console.log('"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""')
+    console.log('"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""')
+    console.log({sections})
+    console.log('"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""')
+    console.log('"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""')
+    
    const response = await client.sendEmail({
      To:users,
      Subject: '🚨 Action Required: Reservation Concern 🚨',
@@ -120,12 +146,9 @@ export class EmailClient extends Client {
     <p><strong>Call ID:</strong> ${m.callId}</p>
     <p><strong>Reservation ID:</strong> ${m.reservationId}</p>
     <p><strong>Trigger:</strong> ${m.Trigger}</p>
+    <p><strong>Trigger:</strong> ${m.fullRep}</p>
     <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-    ${parseTranscription(t).map(fragment => `
-      <p style="margin: 0 0 10px;">
-        <b style="color: #2ecc71;">${fragment.speaker}</b>: ${fragment.text}
-      </p>
-    `).join('')}
+    ${sections}
   </div>`
    })
 
